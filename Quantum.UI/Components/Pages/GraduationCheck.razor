@@ -1,0 +1,240 @@
+@page "/graduation"
+@using Quantum.Core.Models
+@using Quantum.Core.Interfaces
+@using Quantum.UI.Components.Shared
+@inject IGraduationRequirementService GraduationRequirementService
+@inject ICourseScrapingService CourseScraper
+
+<style>
+    /* 主卡片样式 */
+    .main-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    /* 分页器样式 */
+    .pagination-container {
+        margin-top: 16px;
+        padding-top: 16px;
+        text-align: right;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    /* 页面头部容器 */
+    .page-header-container {
+        background: white;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 500;
+        margin: 0;
+    }
+</style>
+
+<div class="page-header-container">
+    <h1 class="page-title">毕业资格自审</h1>
+    <Space>
+        <SpaceItem>
+            <Switch Checked="@_showOnlyUnfinished"
+                    CheckedChildren="仅显示未完成"
+                    UnCheckedChildren="显示全部"
+                    OnChange="@OnFilterChange"/>
+        </SpaceItem>
+        <SpaceItem>
+            <Button Type="@ButtonType.Primary" OnClick="@(() => { _wishListVisible = true; })">
+                <Icon Type="heart" Theme="IconThemeType.Outline"/> 愿望单
+            </Button>
+        </SpaceItem>
+    </Space>
+</div>
+
+<Spin Spinning="@_loading" Tip="加载中...">
+    <Card Class="main-card">
+        <Collapse Accordion>
+            @foreach (var course in PagedCourses)
+            {
+                <Panel Key="@($"course-{course.CourseCode}")"
+                       HeaderTemplate="GetPanelHeader(course)"
+                       OnActiveChange="isActive => OnPanelActiveChange(course, isActive)">
+                    @if (course.Status is CourseStatus.NotSelected or CourseStatus.Failed)
+                    {
+                        <Spin Spinning="@_loadingSections.Contains(course.CourseCode)">
+                            @if (course.Sections.Any())
+                            {
+                                <CourseSectionTable Sections="course.Sections" ShowActions="true"/>
+                            }
+                            else if (!_loadingSections.Contains(course.CourseCode))
+                            {
+                                <Empty Description=@("暂无选课信息")/>
+                            }
+                        </Spin>
+                    }
+                    else
+                    {
+                        <Empty Description=@("已通过课程无需选课")/>
+                    }
+                </Panel>
+            }
+        </Collapse>
+        <div class="pagination-container">
+            <Pagination Total="@FilteredCourses.Count()"
+                        PageSize="@_pageSize"
+                        Current="@_currentPage"
+                        OnChange="@HandlePageChange"
+                        ShowSizeChanger="true"
+                        ShowQuickJumper="true">
+            </Pagination>
+        </div>
+    </Card>
+</Spin>
+
+@* 添加Modal组件 *@
+<Modal Title="@($"课程介绍 - {_selectedCourse?.Name ?? ""}")"
+       Visible="@_introductionVisible"
+       OnCancel="@(() => _introductionVisible = false)"
+       Width="1000"
+       Footer="null">
+    @if (_selectedCourse != null)
+    {
+        <CourseIntroduction Course="@_selectedCourse"/>
+    }
+</Modal>
+
+<Drawer Visible="@_wishListVisible"
+        Closable="true"
+        OnClose="@(() => _wishListVisible = false)"
+        Width="800"
+        Title=@("愿望单")>
+    <WishListTable/>
+</Drawer>
+
+@* ReSharper disable once InconsistentNaming *@
+@code {
+    private List<Course> _courses = [];
+    private bool _loading = true;
+    private bool _showOnlyUnfinished;
+    private HashSet<string> _loadingSections = [];
+    private bool _wishListVisible;
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+
+    private IEnumerable<Course> FilteredCourses => _showOnlyUnfinished
+        ? _courses.Where(c => c.Status is CourseStatus.NotSelected or CourseStatus.Failed)
+        : _courses;
+
+    private IEnumerable<Course> PagedCourses => FilteredCourses
+        .Skip((_currentPage - 1) * _pageSize)
+        .Take(_pageSize);
+
+    private static string GetStatusString(CourseStatus result) => result switch
+    {
+        CourseStatus.NotSelected => "未选",
+        CourseStatus.Failed => "未通过",
+        CourseStatus.Passed => "已通过",
+        CourseStatus.Selected => "进行中",
+        _ => "未知"
+    };
+
+    private static string GetStatusColor(CourseStatus result) => result switch
+    {
+        CourseStatus.NotSelected => "warning",
+        CourseStatus.Failed => "error",
+        CourseStatus.Passed => "success",
+        CourseStatus.Selected => "processing",
+        _ => "default"
+    };
+
+    private Course? _selectedCourse;
+    private bool _introductionVisible;
+
+    private void ShowCourseIntroduction(Course course)
+    {
+        _selectedCourse = course;
+        _introductionVisible = true;
+    }
+
+    protected RenderFragment<Course> GetPanelHeader => course => __builder =>
+    {
+        <div>
+            <GridRow>
+                <GridCol Span="6">
+                    <AntDesign.Text Strong>
+                        @course.CourseCode
+                    </AntDesign.Text>
+                </GridCol>
+                <GridCol Span="6">
+                    @course.Name
+                </GridCol>
+                <GridCol Span="4">
+                    @course.Credits
+                </GridCol>
+                <GridCol Span="4">
+                    <AntDesign.Tag Color="@GetStatusColor(course.Status)">
+                        @GetStatusString(course.Status)
+                    </AntDesign.Tag>
+                </GridCol>
+                <GridCol Span="4">
+                    <Button Type="@ButtonType.Link"
+                            OnClick="() => ShowCourseIntroduction(course)"
+                            OnClickStopPropagation="true"
+                            Size="ButtonSize.Small">
+                        <Icon Type="info-circle" Theme="IconThemeType.Outline" /> 课程介绍
+                    </Button>
+                </GridCol>
+            </GridRow>
+        </div>
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _courses = await GraduationRequirementService.GetGraduationRequirementsAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnPanelActiveChange(Course course, bool isActive)
+    {
+        if (!isActive || course.Status is not (CourseStatus.NotSelected or CourseStatus.Failed))
+            return;
+
+        if (course.Sections.Any())
+            return;
+
+        try
+        {
+            _loadingSections.Add(course.CourseCode);
+            StateHasChanged();
+
+            var sections = await CourseScraper.GetSectionOfACourse(course);
+            course.Sections = sections;
+        }
+        finally
+        {
+            _loadingSections.Remove(course.CourseCode);
+            StateHasChanged();
+        }
+    }
+
+    private void HandlePageChange(PaginationEventArgs args)
+    {
+        _currentPage = args.Page;
+        _pageSize = args.PageSize;
+    }
+
+    private void OnFilterChange(bool value)
+    {
+        _showOnlyUnfinished = value;
+        _currentPage = 1; // 重置到第一页
+    }
+}

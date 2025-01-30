@@ -1,0 +1,37 @@
+.editor-container {
+    height: calc(100vh - 300px);
+    min-height: 300px;
+    width: 100%;
+}
+
+::deep .monaco-editor-container {
+    height: 100% !important;
+}
+
+::deep .monaco-editor {
+    height: 100% !important;
+}
+
+/* 覆盖Ant Design Card样式使其充满容器 */
+::deep .ant-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .ant-card-body {
+    flex: 1;
+    padding: 12px;
+    overflow: hidden;
+}
+
+::deep .ant-tabs {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .ant-tabs-content {
+    flex: 1;
+    height: 100%;
+}

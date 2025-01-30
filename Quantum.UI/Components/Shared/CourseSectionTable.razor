@@ -1,0 +1,71 @@
+@using Quantum.Core.Models
+@using Quantum.Infrastructure.States
+@using System.Globalization
+@inject WishListState WishListState
+
+<Table DataSource="@Sections"
+       Size="TableSize.Small"
+       Bordered>
+    @if (ShowCourseName)
+    {
+        <PropertyColumn Title="课程名称" Property="c => c.Course.Name"/> 
+    }
+    <Column Title="教师" TData="CourseSection">
+        <div class="teacher-name">
+            @foreach (var instructor in context.Instructors)
+            {
+                <a href="@GetTeacherUrl(instructor.Id)" target="_blank">@instructor.Name</a>
+                <br/>
+            }
+        </div>
+    </Column>
+    <Column Title="教师评分" TData="CourseSection">
+        <div style="white-space: pre-wrap;">
+            @string.Join('\n', context.Instructors.Select(t => t.Rating is 0 ? "N/A" : t.Rating.ToString(CultureInfo.InvariantCulture)))
+        </div>
+    </Column>
+    <PropertyColumn Title="学期" Property="c => c.Semester"/>
+    <Column Title="上课时间" TData="CourseSection">
+        <div style="white-space: pre-wrap;">
+            @string.Join('\n', context.Schedules)
+        </div>
+    </Column>
+    <Column Title="上课地点" TData="CourseSection">
+        <div style="white-space: pre-wrap;">
+            @string.Join('\n', context.Locations)
+        </div>
+    </Column>
+    <PropertyColumn Title="考试时间" Property="c => c.ExamTime"/>
+    <PropertyColumn Title="教学形式" Property="c => c.TeachingForm"/>
+    <PropertyColumn Title="授课方式" Property="c => c.TeachingMethod"/>
+    <Column Title="余量/容量" TData="CourseSection">
+        @context.AvailableSeats/@context.Capacity
+    </Column>
+    <PropertyColumn Title="本专业待定人数" Property="c => c.MajorWaitingCount"/>
+    <PropertyColumn Title="所有待定人数" Property="c => c.TotalWaitingCount"/>
+    <Column Title="选中概率" TData="CourseSection">
+        @((int)(context.SelectionProbability * 100))%
+    </Column>
+    @if (ShowActions)
+    {
+        <ActionColumn>
+            @if (!WishListState.WishList.Contains(context))
+            {
+                <AntDesign.Button Type="ButtonType.Primary" Size="ButtonSize.Small" @onclick="() => WishListState.AddSection(context)">加入心愿单</AntDesign.Button>
+            }
+            else
+            {
+                <AntDesign.Button Type="ButtonType.Primary" Size="ButtonSize.Small" @onclick="() => WishListState.RemoveSection(context)">从心愿单中移除</AntDesign.Button>
+            }
+        </ActionColumn>
+    }
+</Table>
+
+@code
+{
+    [Parameter] public required List<CourseSection> Sections { get; set; } = null!;
+    [Parameter] public bool ShowActions { get; set; }
+    [Parameter] public bool ShowCourseName { get; set; }
+
+    private static string GetTeacherUrl(int teacherId) => $"https://chalaoshi.click/t/{teacherId}/";
+}
