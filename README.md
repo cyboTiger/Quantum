@@ -1,55 +1,40 @@
-# Quantum Course Helper
+# Quantum: Zjuers 桌面端一站式工具
 
-A powerful course selection tool for zdbk, built with .NET 8 and Electron.NET.
+一款基于 .NET 8 , Blazor 和 Electron.NET 开发的，面向浙大学子的桌面端一站式工具。
 
-## Features
+## 目前已实现功能
 
-- Course list scraping and information gathering
-- Teacher rating integration
-- Course selection probability calculation
-- Graduation requirement checking
-- Smart course filtering
-- Automated schedule optimization
+- 选课系统：
+   - 课程信息抓取与整合
+   - 教师评分系统集成
+   - 选课概率计算
+   - 毕业要求检查
+   - 自动课表优化
 
-## Project Structure
+## 项目结构
 
-- **Quantum.Core**: Contains the core business logic and interfaces
-- **Quantum.Infrastructure**: Implements the core interfaces and handles external interactions
-- **Quantum.UI**: Blazor-based user interface with Electron.NET integration
+- **Quantum.Core**: 包含核心业务模型和接口定义、枚举、常量等
+- **Quantum.Infrastructure**: 实现核心接口，处理外部交互，包含 Exception、 Utilities 等
+- **Quantum.UI**: 基于 Blazor 和 Electron.NET 的用户界面，包含States等。
 
-## Development Requirements
+## 开发环境要求
 
 - .NET 8 SDK
-- Node.js (for Electron.NET)
-- Visual Studio 2022 or later (recommended)
+- Node.js（用于 Electron.NET）
+- Visual Studio 2022 或更高版本（推荐）
 
-## Getting Started
+electronize.exe start /PublishSingleFile false
+electronize.exe build
 
-1. Clone the repository
-2. Install the required dependencies:
-   ```bash
-   dotnet restore
-   ```
-3. Run the application:
-   ```bash
-   cd Quantum.UI
-   dotnet electronize start
-   ```
+## 参与贡献
 
-## TODO List
+本项目正在积极开发中。欢迎各位同学前来贡献代码。
 
-- [ ] Implement zdbk authentication logic
-- [ ] Implement course scraping functionality
-- [ ] Implement graduation requirement parsing
-- [ ] Add course filtering algorithms
-- [ ] Add schedule optimization algorithms
-- [ ] Complete UI implementation
-- [ ] Add mobile support
+1. Fork 本项目
+2. 创建新的 Feature branch
+3. 将修改 Push 到自己的 branch
+4. 创建 Pull Request
 
-## Contributing
+## 开源协议
 
-This project is currently under development. The core scraping and authentication logic will be implemented separately.
-
-## License
-
-[MIT License](LICENSE)
+[MIT 开源协议](LICENSE)

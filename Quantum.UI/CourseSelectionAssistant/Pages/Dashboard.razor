@@ -1,0 +1,70 @@
+@page "/csa"
+@inherits zjuam.zju.edu.cn.ZjuamAuthenticatedComponent
+@inject IZdbkService ZdbkService
+@using Quantum.UI.CourseSelectionAssistant.Components
+@using zdbk.zju.edu.cn.Models
+@using zdbk.zju.edu.cn
+
+<PageTitle>选课情况概览 - Quantum</PageTitle>
+
+
+<div class="overview">
+    <PageHeader Title="选课状态概览"
+                Style="padding: 16px 0">
+    </PageHeader>
+
+    @if (_loading)
+    {
+        <div class="loading-container">
+            <Spin Size="SpinSize.Large" Tip="加载中..." />
+        </div>
+    }
+    else
+    {
+        <AntDesign.Row Gutter="16" Style="margin-bottom: 24px">
+            <AntDesign.Col Span="12">
+                <Card Bordered>
+                    <Statistic Title="已选课程"
+                                Value="@_selectedCourseCount"
+                                Suffix="门"
+                                ValueStyle="color: #3f8600" />
+                </Card>
+            </AntDesign.Col>
+            <AntDesign.Col Span="12">
+                <Card Bordered>
+                    <Statistic Title="已选学分"
+                                Value="@_totalCredits"
+                                Precision="1"
+                                Suffix="分"
+                                ValueStyle="color: #cf1322" />
+                </Card>
+            </AntDesign.Col>
+        </AntDesign.Row>
+
+        <Card Title="已选课程" Bordered>
+            <TimeTable Sections="@ZdbkService.SelectedSections.Value" />
+        </Card>
+    }
+</div>
+
+@code {
+    private decimal _totalCredits;
+    private int _selectedCourseCount;
+    private bool _loading;
+
+    protected override void OnInitialized()
+    {
+        _loading = !ZdbkService.SelectedSections.IsInitialized;
+        UpdateData(ZdbkService.SelectedSections.Value);
+        _ = Task.WhenAll(ZdbkService.SelectedSections.Peek().UpdateTask)
+            .ContinueWith(_ => UpdateData(ZdbkService.SelectedSections.Value))
+            .ContinueWith(_ => { _loading = false; })
+            .ContinueWith(_ => { InvokeAsync(StateHasChanged); });
+    }
+
+    private void UpdateData(IReadOnlyCollection<SectionSnapshot> selectedSections)
+    {
+        _totalCredits = selectedSections.Sum(s => s.CourseCredits);
+        _selectedCourseCount = selectedSections.Count;
+    }
+}

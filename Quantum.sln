@@ -1,15 +1,22 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.UI", "Quantum.UI\Quantum.UI.csproj", "{4311DEBB-7D61-4F07-94AE-554042CDD045}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.Infrastructure", "Quantum.Infrastructure\Quantum.Infrastructure.csproj", "{5580C4D3-B0C6-47CB-9E16-E48A4DBDE7CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.Core", "Quantum.Core\Quantum.Core.csproj", "{5580C4D3-B0C6-47CB-9E16-E48A4DBDE7CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zjuam.zju.edu.cn", "Quantum.Service\zjuam.zju.edu.cn\zjuam.zju.edu.cn.csproj", "{B7D2DDF9-3487-46FF-9C26-66DBAB081398}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.Infrastructure", "Quantum.Infrastructure\Quantum.Infrastructure.csproj", "{B7D2DDF9-3487-46FF-9C26-66DBAB081398}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Quantum.Service", "Quantum.Service", "{D54D3B3E-4871-481F-8803-B150DD0682A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.ConsoleTest", "Quantum.ConsoleTest\Quantum.ConsoleTest.csproj", "{CD8486BD-A151-4B45-97EF-E53BB83E0FD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zdbk.zju.edu.cn", "Quantum.Service\zdbk.zju.edu.cn\zdbk.zju.edu.cn.csproj", "{3600EE7D-17AA-4276-8D7C-642845FF1AFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chalaoshi.click", "Quantum.Service\chalaoshi.click\chalaoshi.click.csproj", "{A21D841B-4BAA-4DE3-BEC0-D0387866E1E0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Quantum.UI", "Quantum.UI", "{8A351E13-66C0-4001-9685-E71302AACB1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.UI.Shell", "Quantum.UI\Shell\Quantum.UI.Shell.csproj", "{334C9A62-EB62-4637-B349-0056F2C27600}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantum.UI.CourseSelectionAssistant", "Quantum.UI\CourseSelectionAssistant\Quantum.UI.CourseSelectionAssistant.csproj", "{259AFC36-7799-4B42-A315-1F20BF0A710E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +24,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4311DEBB-7D61-4F07-94AE-554042CDD045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4311DEBB-7D61-4F07-94AE-554042CDD045}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4311DEBB-7D61-4F07-94AE-554042CDD045}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4311DEBB-7D61-4F07-94AE-554042CDD045}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5580C4D3-B0C6-47CB-9E16-E48A4DBDE7CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5580C4D3-B0C6-47CB-9E16-E48A4DBDE7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5580C4D3-B0C6-47CB-9E16-E48A4DBDE7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -29,12 +32,31 @@ Global
 		{B7D2DDF9-3487-46FF-9C26-66DBAB081398}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7D2DDF9-3487-46FF-9C26-66DBAB081398}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7D2DDF9-3487-46FF-9C26-66DBAB081398}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD8486BD-A151-4B45-97EF-E53BB83E0FD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD8486BD-A151-4B45-97EF-E53BB83E0FD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD8486BD-A151-4B45-97EF-E53BB83E0FD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD8486BD-A151-4B45-97EF-E53BB83E0FD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3600EE7D-17AA-4276-8D7C-642845FF1AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3600EE7D-17AA-4276-8D7C-642845FF1AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3600EE7D-17AA-4276-8D7C-642845FF1AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3600EE7D-17AA-4276-8D7C-642845FF1AFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A21D841B-4BAA-4DE3-BEC0-D0387866E1E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A21D841B-4BAA-4DE3-BEC0-D0387866E1E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A21D841B-4BAA-4DE3-BEC0-D0387866E1E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A21D841B-4BAA-4DE3-BEC0-D0387866E1E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{334C9A62-EB62-4637-B349-0056F2C27600}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{334C9A62-EB62-4637-B349-0056F2C27600}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{334C9A62-EB62-4637-B349-0056F2C27600}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{334C9A62-EB62-4637-B349-0056F2C27600}.Release|Any CPU.Build.0 = Release|Any CPU
+		{259AFC36-7799-4B42-A315-1F20BF0A710E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{259AFC36-7799-4B42-A315-1F20BF0A710E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{259AFC36-7799-4B42-A315-1F20BF0A710E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{259AFC36-7799-4B42-A315-1F20BF0A710E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B7D2DDF9-3487-46FF-9C26-66DBAB081398} = {D54D3B3E-4871-481F-8803-B150DD0682A6}
+		{3600EE7D-17AA-4276-8D7C-642845FF1AFF} = {D54D3B3E-4871-481F-8803-B150DD0682A6}
+		{A21D841B-4BAA-4DE3-BEC0-D0387866E1E0} = {D54D3B3E-4871-481F-8803-B150DD0682A6}
+		{334C9A62-EB62-4637-B349-0056F2C27600} = {8A351E13-66C0-4001-9685-E71302AACB1F}
+		{259AFC36-7799-4B42-A315-1F20BF0A710E} = {8A351E13-66C0-4001-9685-E71302AACB1F}
 	EndGlobalSection
 EndGlobal

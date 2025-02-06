@@ -1,0 +1,225 @@
+@page "/csa/wishlist"
+@using BlazorMonaco.Editor
+@using Quantum.UI.CourseSelectionAssistant.Components
+@using zdbk.zju.edu.cn.Models
+@using Microsoft.CodeAnalysis
+@using Microsoft.CodeAnalysis.CSharp
+@using Quantum.Infrastructure.Models
+@using Quantum.UI.CourseSelectionAssistant.Services
+@using zdbk.zju.edu.cn
+@using System.Reflection
+@inject IMessageService Message
+@inject IWishlistService WishlistService
+@inject IZdbkService ZdbkService
+
+<PageTitle>愿望单 - Quantum 选课助手</PageTitle>
+
+<Card>
+    <Tabs>
+        <TabPane Key="1" Tab=@("愿望单列表")>
+            @if (WishlistService.Wishlist.Count == 0)
+            {
+                <Empty Description=@("您的愿望单是空的") />
+            }
+            else
+            {
+                <WishListTable />
+            }
+        </TabPane>
+        <TabPane Key="2" Tab=@("优化算法")> 
+            <AntDesign.Form Layout="FormLayout.Vertical" Model="_">
+                <FormItem Label=@("算法代码")>
+                    <div class="editor-container">
+                        <StandaloneCodeEditor @ref="_editor" ConstructionOptions="EditorConstructionOptions" />
+                    </div>
+                </FormItem>
+                <FormItem>
+                    <Button Type="@ButtonType.Primary" OnClick="RunOptimization">
+                        运行优化
+                    </Button>
+                    <Button OnClick="ResetCode" Style="margin-left: 8px;">
+                        重置代码
+                    </Button>
+                </FormItem>
+            </AntDesign.Form>
+        </TabPane>
+        <TabPane Key="3" Tab="优化结果">
+            <Table DataSource="@_optimizedSchedule" Size="@TableSize.Small" Bordered>
+                <PropertyColumn Title="课程名称" Property="c => c.CourseName" />
+                <Column Title="教师" TData="SectionSnapshot">
+                    <div style="white-space: pre-wrap;">
+                        @string.Join('\n', context.Instructors)
+                    </div>
+                </Column>
+                <PropertyColumn Title="学分" Property="c => c.CourseCredits" />
+                <PropertyColumn Title="学期" Property="c => c.Semesters" />
+                <Column Title="上课时间" TData="SectionSnapshot">
+                    <div style="white-space: pre-wrap;">
+                        @string.Join('\n', context.ScheduleAndLocations.Select(pair=>pair.Schedule))
+                    </div>
+                </Column>
+                <Column Title="上课地点" TData="SectionSnapshot">
+                    <div style="white-space: pre-wrap;">
+                        @string.Join('\n', context.ScheduleAndLocations.Select(pair=>pair.Location))
+                    </div>
+                </Column>
+                <PropertyColumn Title="考试时间" Property="c => c.ExamTime" />
+                <Column Title="选中概率" TData="SectionSnapshot">
+                    @if (context.ExtraProperties.TryGetValue("SelectionProbability", out var selectionProbability))
+                    {
+                        var res = decimal.Parse(selectionProbability);
+                        @($"{(int)(res * 100)}%")
+                    }
+                </Column>
+            </Table>
+        </TabPane>
+    </Tabs>
+</Card>
+
+@code {
+    private readonly object _ = new();
+    private readonly HashSet<SectionSnapshot> _optimizedSchedule = [];
+
+    private StandaloneCodeEditor _editor = new();
+
+    private static StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
+    {
+        return new StandaloneEditorConstructionOptions
+            {
+                Language = "csharp",
+                Value = SampleCode,
+                AutomaticLayout = true,
+                ScrollBeyondLastLine = false,
+                Dimension = new Dimension
+                {
+                    Height = 400
+                }
+            };
+    }
+
+    // ReSharper disable once UseRawString
+    const string SampleCode = @"using System;
+using System.Collections.Generic;
+using System.Linq;
+using zdbk.zju.edu.cn.Models;
+using zdbk.zju.edu.cn.Utilities;
+
+public class Optimizer // 注：Optimizer类为优化入口，请确保该类存在无参构造函数
+{
+    public static HashSet<SectionSnapshot> OptimizeSchedule(
+        IReadOnlySet<SectionSnapshot> wishList,
+        IReadOnlySet<SectionSnapshot> chosenSections) // 注：OptimizeShedule函数为优化入口，请不要修改该函数签名
+    {
+        // 这里写你的算法
+        // 你可以使用 wishList 和 chosenSections 来获取愿望单和已选课程
+        // 下面是一个简单的示范
+        Dfs(0, wishList.ToList(), chosenSections);
+        Answer.UnionWith(chosenSections);
+        return Answer;
+    }
+
+    public static HashSet<SectionSnapshot> Answer = [];
+    public static HashSet<SectionSnapshot> CurrentAnswer = [];
+
+    public static void Dfs(int depth, List<SectionSnapshot> wishList, IReadOnlySet<SectionSnapshot> chosenSections){
+        if(depth == wishList.Count){
+            if(CurrentAnswer.Sum(s=>s.CourseCredits) > Answer.Sum(s=>s.CourseCredits)){ // LINQ，很神奇吧
+                Answer = new(CurrentAnswer); // 注意，在 C# 中，对象都是以引用形式存在的
+            }
+            return;
+        }
+        if(NoConflict(wishList[depth], CurrentAnswer, chosenSections)){
+            CurrentAnswer.Add(wishList[depth]);
+            Dfs(depth + 1, wishList, chosenSections);
+            CurrentAnswer.Remove(wishList[depth]);
+        }
+        Dfs(depth + 1, wishList, chosenSections);
+    }
+
+    public static bool NoConflict(SectionSnapshot selectableSection, HashSet<SectionSnapshot> currentAnswer, IReadOnlySet<SectionSnapshot> chosenSections){
+        if(currentAnswer.Any(s=>s.CourseId == selectableSection.CourseId)
+            || (chosenSections.Any(s=>s.CourseId == selectableSection.CourseId)))
+        {
+            return false;
+        }
+
+        // 你可以直接使用代码中已经封装好的功能
+        // 就像你的代码是一个真正的编译单元一样！
+
+        return !(
+                (chosenSections.Any(s => s.IsConflictWith(selectableSection))) ||  // 注释这一行，则不考虑与已选课程的冲突情况
+                currentAnswer.Any(s => s.IsConflictWith(selectableSection)));
+    }
+}";
+    private async Task RunOptimization()
+    {
+        try
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(await _editor.GetValue());
+            var assemblyName = Path.GetRandomFileName();
+            var references = new MetadataReference[]
+            {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(SectionSnapshot).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Entity<>).Assembly.Location),
+                MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
+                MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Collections")).Location),
+                MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Linq")).Location),
+                MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("netstandard")).Location)
+            };
+
+            var compilation = CSharpCompilation.Create(
+                assemblyName,
+                syntaxTrees: new[] { syntaxTree },
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            using var ms = new MemoryStream();
+            var result = compilation.Emit(ms);
+
+            if (!result.Success)
+            {
+                var failures = result.Diagnostics
+                    .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
+
+                var errorMessage = string.Join("\n", failures.Select(f => f.GetMessage()));
+                await Message.Error("编译错误：\n" + errorMessage);
+                return;
+            }
+
+            ms.Seek(0, SeekOrigin.Begin);
+            var assembly = Assembly.Load(ms.ToArray());
+            var type = assembly.GetType("Optimizer");
+            var method = type?.GetMethod("OptimizeSchedule");
+
+            if (method == null)
+            {
+                await Message.Error("找不到 OptimizeSchedule 方法");
+                return;
+            }
+
+
+             var optimizedSections = (HashSet<SectionSnapshot>?)method.Invoke(null,
+                 [WishlistService.Wishlist,
+                  ZdbkService.SelectedSections.Value]); 
+
+            if (optimizedSections is null) throw new InvalidOperationException("优化算法返回了 null");
+
+            _optimizedSchedule.Clear();
+            _optimizedSchedule.UnionWith(optimizedSections);
+
+            await Message.Success("优化完成！");
+        }
+        catch (Exception ex)
+        {
+            await Message.Error("运行错误：" + ex.Message);
+        }
+    }
+
+    private async void ResetCode()
+    {
+        await _editor.SetValue(SampleCode);
+    }
+}

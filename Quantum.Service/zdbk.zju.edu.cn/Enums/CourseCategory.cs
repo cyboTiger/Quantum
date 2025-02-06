@@ -1,0 +1,31 @@
+namespace zdbk.zju.edu.cn.Enums;
+public enum CourseCategory
+{
+    Undefined = 0,
+    MyCategory,
+    CompulsoryAll,
+    CompulsoryIpm,
+    CompulsoryLan,
+    CompulsoryCom,
+    CompulsoryEtp,
+    CompulsorySci,
+    ElectiveAll,
+    ElectiveChC,
+    ElectiveGlC,
+    ElectiveSoc,
+    ElectiveSci,
+    ElectiveArt,
+    ElectiveBio,
+    ElectiveTec,
+    ElectiveGec,
+    PhysicalEdu,
+    MajorFundation,
+    MyMajor,
+    AllMajor,
+    AccreditedAll,
+    AccreditedArt,
+    AccreditedLbr,
+    International,
+    Ckc,
+    Honor
+}

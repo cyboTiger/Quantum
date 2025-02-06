@@ -1,0 +1,114 @@
+@using Quantum.Infrastructure.Abstractions
+@inject IEnumerable<IModule> Modules
+@inject NavigationManager NavigationManager
+
+<Menu Mode="MenuMode.Horizontal"
+      Theme="MenuTheme.Dark"
+      Class="nav-menu"
+      SelectedKeys="@(new[] { _currentModuleKey })"
+      OnMenuItemClicked="OnModuleSelected">
+    @foreach (var module in Modules)
+    {
+        var items = module.GetNavigationItems().ToList();
+        var firstItem = items.FirstOrDefault();
+        if (firstItem == null) continue;
+        
+        <MenuItem Key="@firstItem.Key">
+            <Template>
+                <Space Size="@SpaceSize.Middle">
+                    <SpaceItem>
+                        <Icon Type="@firstItem.Icon" Theme="IconThemeType.Outline" />
+                    </SpaceItem>
+                    <SpaceItem>
+                        <span class="module-title">@module.ModuleTitle</span>
+                    </SpaceItem>
+                </Space>
+            </Template>
+        </MenuItem>
+    }
+    <MenuItem Key="accounts" RouterLink="/accounts">
+        <Space Size="@SpaceSize.Middle">
+            <SpaceItem>
+                <Icon Type="user" Theme="IconThemeType.Outline" />
+            </SpaceItem>
+            <SpaceItem>
+                <span class="module-title">账号管理</span>
+            </SpaceItem>
+        </Space>
+    </MenuItem>
+</Menu>
+
+<style>
+    .nav-menu {
+        line-height: 46px;
+        padding: 0 24px;
+        border: none;
+    }
+
+    .module-title {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    :global(.nav-menu.ant-menu-dark .ant-menu-item-selected) {
+        background-color: #1890ff;
+    }
+</style>
+
+@code {
+    private string? _currentModuleKey;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        UpdateCurrentModule();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateCurrentModule();
+        StateHasChanged();
+    }
+
+    private void UpdateCurrentModule()
+    {
+        var path = new Uri(NavigationManager.Uri).LocalPath;
+        
+        foreach (var module in Modules)
+        {
+            var items = module.GetNavigationItems().ToList();
+            var allItems = items.Concat(items.SelectMany(i => i.Children));
+            
+            if (allItems.Any(item => path.StartsWith(item.Route)))
+            {
+                _currentModuleKey = items.FirstOrDefault()?.Key;
+                return;
+            }
+        }
+
+        if (path.StartsWith("/accounts"))
+        {
+            _currentModuleKey = "accounts";
+        }
+    }
+
+    private void OnModuleSelected(MenuItem item)
+    {
+        var selectedKey = item.Key;
+        foreach (var module in Modules)
+        {
+            var items = module.GetNavigationItems().ToList();
+            var firstItem = items.FirstOrDefault();
+            if (firstItem?.Key == selectedKey)
+            {
+                NavigationManager.NavigateTo(firstItem.Route);
+                return;
+            }
+        }
+    }
+}
