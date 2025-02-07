@@ -1,40 +1,96 @@
-# Quantum: Zjuers 桌面端一站式工具
+# Quantum
 
-一款基于 .NET 8 , Blazor 和 Electron.NET 开发的，面向浙大学子的桌面端一站式工具。
+> 前人栽树，后人乘凉。但这一次，我们想和所有浙大人一起，种下一片可以自由生长的森林。
 
-## 目前已实现功能
+Quantum 是一个基于 .NET 9 和 Blazor 的桌面端工具箱框架，旨在为浙江大学校园生活提供一站式工具解决方案。通过模块化设计和标准化接口，我们致力于构建一个可持续发展的工具生态系统。
 
-- 选课系统：
-   - 课程信息抓取与整合
-   - 教师评分系统集成
-   - 选课概率计算
-   - 毕业要求检查
-   - 自动课表优化
+## 开发计划
 
-## 项目结构
+### 模块开发
+- [ ] 成绩、课程查询模块
+- [ ] 学在浙大、PTA TODO集成模块
 
-- **Quantum.Core**: 包含核心业务模型和接口定义、枚举、常量等
-- **Quantum.Infrastructure**: 实现核心接口，处理外部交互，包含 Exception、 Utilities 等
-- **Quantum.UI**: 基于 Blazor 和 Electron.NET 的用户界面，包含States等。
+### 框架开发
+- [ ] 实现动态加载程序集
 
-## 开发环境要求
+## 特性
 
-- .NET 8 SDK
-- Node.js（用于 Electron.NET）
-- Visual Studio 2022 或更高版本（推荐）
+- **模块沙盒机制**：每个功能模块（如选课、查分、校车等）独立运行，支持热插拔
+- **统一开发范式**：基于 .NET 9 的标准化模块接口规范
+- **核心服务池**：内置统一身份认证引擎和通知系统等基础设施
+- **跨平台支持**：基于现代 Web 技术，提供一致的跨平台体验
 
-electronize.exe start /PublishSingleFile false
-electronize.exe build
+## 技术架构
+
+### Quantum.Infrastructure
+框架基础层，提供：
+- 抽象接口（Abstractions）
+- 扩展方法（Extensions）
+- 数据模型（Models）
+- 实用工具（Utilities）
+
+### Quantum.Service
+服务集成层，整合校园各类在线服务：
+- chalaoshi.click
+- zdbk.zju.edu.cn
+- zjuam.zju.edu.cn
+等
+
+### Quantum.UI
+用户界面层，包含：
+- 课程选择助手（CourseSelectionAssistant）
+- 主界面（Shell）
+- 组件库
+- 静态资源
+
+> 注：未来版本中，Quantum 核心将只包含 Infrastructure 和 Shell，其他功能将以模块形式提供。
 
 ## 参与贡献
 
-本项目正在积极开发中。欢迎各位同学前来贡献代码。
+我们欢迎各类贡献，包括但不限于：
 
-1. Fork 本项目
-2. 创建新的 Feature branch
-3. 将修改 Push 到自己的 branch
-4. 创建 Pull Request
+### 功能模块
+- 多平台 TodoList 集成
+- 校车提醒
+- 更多创意...
 
-## 开源协议
+### 服务扩展
+- AI 助手引擎
+- 校园 IoT 接入
+- 其他服务集成
 
-[MIT 开源协议](LICENSE)
+### 主题定制
+- 紫金港主题
+- 玉泉主题
+- 舟山主题
+- 海宁主题
+
+## 开发环境
+
+- .NET 9
+- Blazor
+- Electron (正在考虑迁移到更轻量级的跨平台框架)
+
+## 相关链接
+
+GitLab 仓库：[Quantum](https://git.zju.edu.cn/quantum/quantum)
+
+## 开发团队
+
+- Shoming (lch)
+- DDKing (lhb)
+- 春风10007 (yxt)
+- George (hzh)
+
+## 愿景
+
+Quantum 致力于成为连接校园服务和个人需求的桥梁，我们期待看到：
+- 大二学生开发并分享「大物实验数据处理工具」
+- 研究生将论文查重工具封装为模块
+- 更多由浙大人创造的优质工具
+
+通过标准化的工具箱框架，我们希望能够解决当前校园工具分散、难以维护的问题，为浙大学子提供更好的数字化校园体验。
+
+## 许可证
+
+[MIT许可证](LICENSE)
