@@ -1,6 +1,6 @@
 @using Quantum.Infrastructure.Abstractions
 @using Quantum.Infrastructure.Models
-@inject IEnumerable<IModule> Modules
+@inject IEnumerable<IUiModule> Modules
 @inject NavigationManager NavigationManager
 
 @if (_currentModule != null)
@@ -69,7 +69,7 @@
 
 @* ReSharper disable once InconsistentNaming *@
 @code {
-    private IModule? _currentModule;
+    private IUiModule? _currentModule;
     private string? _currentModuleKey;
     private string? _currentItemKey;
     private bool _collapsed;

@@ -5,9 +5,9 @@ using Quantum.UI.CourseSelectionAssistant.Services;
 
 namespace Quantum.UI.CourseSelectionAssistant;
 
-public class CsaModule : IModule
+public class CsaModule : IUiModule
 {
-    public string ModuleKey => "csa";
+    public string ModuleId => "csa";
     public string ModuleTitle => "选课助手";
     public string ModuleIcon => "book";
     public string DefaultRoute => "/csa";
@@ -50,7 +50,7 @@ public class CsaModule : IModule
         ];
     }
 
-    public void ConfigureServices(IServiceCollection services)
+    public void Load(IServiceCollection services)
     {
         services.AddInitializableService<IWishlistService, WishlistService>();
     }

@@ -32,5 +32,5 @@ public class NavigationItem
     /// <summary>
     /// 子菜单项
     /// </summary>
-    public List<NavigationItem> Children { get; set; } = [];
+    public IEnumerable<NavigationItem> Children { get; set; } = [];
 }

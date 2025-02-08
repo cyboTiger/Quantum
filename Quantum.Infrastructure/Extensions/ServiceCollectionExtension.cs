@@ -23,18 +23,18 @@ public static class ServiceCollectionExtension
     /// 添加所有模块的服务
     /// </summary>
     public static IServiceCollection AddModule<T>(this IServiceCollection services)
-        where T : IModule
+        where T : IUiModule
     {
         var module = Activator.CreateInstance<T>();
-        services.AddSingleton<IModule>(module);
-        module.ConfigureServices(services);
+        services.AddSingleton<IUiModule>(module);
+        module.Load(services);
         return services;
     }
 
     public static IServiceCollection ConfigureService<T>(this IServiceCollection services)
-        where T : IServiceConfigurator
+        where T : IModule
     {
-        Activator.CreateInstance<T>().ConfigureServices(services);
+        Activator.CreateInstance<T>().Load(services);
         return services;
     }
 }
