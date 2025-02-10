@@ -18,7 +18,7 @@ public interface IUiModule : IModule
     string? ModuleIcon { get; }
 
     /// <summary>
-    /// 获取默认路由
+    /// 获取默认页面
     /// </summary>
     string DefaultRoute { get; }
 

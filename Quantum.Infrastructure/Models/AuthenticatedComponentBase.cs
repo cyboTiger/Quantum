@@ -13,14 +13,7 @@ public abstract class AuthenticatedComponentBase : ComponentBase
     {
         if (!AccountService.IsAuthenticated)
         {
-            var currentUri = NavigationManager.Uri;
-            var loginRoute = AccountService.LoginRoute;
-
-            // Add return url as a query parameter
-            var returnUrl = Uri.EscapeDataString(currentUri);
-            var redirectUrl = $"{loginRoute}?returnUrl={returnUrl}";
-
-            NavigationManager.NavigateTo(redirectUrl);
+            NavigationManager.NavigateTo("/accounts");
         }
 
         await base.OnAfterRenderAsync(firstRender);

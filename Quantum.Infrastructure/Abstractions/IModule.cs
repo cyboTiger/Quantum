@@ -1,3 +1,5 @@
+using Quantum.Infrastructure.Utilities;
+
 namespace Quantum.Infrastructure.Abstractions;
 
 /// <summary>
@@ -11,7 +13,24 @@ public interface IModule
     string ModuleId { get; }
 
     /// <summary>
-    /// 模块初始化
+    /// 获取模块的版本号
     /// </summary>
-    void Load(IServiceCollection services);
+    Version Version { get; }
+
+    /// <summary>
+    /// 获取模块的作者
+    /// </summary>
+    string Author { get; }
+
+    /// <summary>
+    /// 获取模块的介绍
+    /// </summary>
+    string Description { get; }
+
+    /// <summary>
+    /// 当所有模块加载完成时执行的异步逻辑
+    /// </summary>
+    /// <param name="modules">所有已加载的模块</param>
+    /// <returns>表示异步操作结果的任务，包含一个布尔值，指示模块是否已就绪</returns>
+    Task<Result> OnAllLoadedAsync(IEnumerable<IModule> modules);
 }

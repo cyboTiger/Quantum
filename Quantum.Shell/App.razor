@@ -1,0 +1,40 @@
+@using Quantum.Infrastructure.Models
+@inject InjectedCodeManager CodeManager
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="@Assets["Quantum.Shell.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet @rendermode="RenderMode.InteractiveServer"/>
+    @foreach (var markupCode in CodeManager.HeadCodes)
+    {
+        @markupCode
+    }
+</head>
+
+<style>
+    ::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+
+<body>
+<Routes @rendermode="RenderMode.InteractiveServer" />
+<AntContainer @rendermode="RenderMode.InteractiveServer" />
+    @foreach (var markupCode in CodeManager.PreBlazorCodes)
+    {
+        @markupCode
+    }
+    <script src="_framework/blazor.web.js"></script>
+    @foreach (var markupCode in CodeManager.PostBlazorCodes)
+    {
+        @markupCode
+    }
+</body>
+
+</html>

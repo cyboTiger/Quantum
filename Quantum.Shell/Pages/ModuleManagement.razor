@@ -1,0 +1,149 @@
+@page "/modules"
+@using Quantum.Infrastructure.Abstractions
+@using System.IO.Compression
+@using ElectronNET.API
+@using ElectronNET.API.Entities
+@inject IEnumerable<IModule> Modules
+@inject IMessageService MessageService
+
+<Button Type="@ButtonType.Primary" OnClick="InstallModule">
+    <Icon Type="upload" Theme="IconThemeType.Outline"></Icon>
+    安装插件
+</Button>
+<Table TItem="IModule"
+       DataSource="@Modules"
+       HidePagination>
+    <PropertyColumn Property="c=>c.ModuleId" Title="插件ID" />
+    <PropertyColumn Property="c=>c.Version" Title="版本" />
+    <PropertyColumn Property="c=>c.Author" Title="作者" />
+    <Column Title="状态" TData="IModule">
+        <Badge Status="@BadgeStatus.Processing" Text="已加载" />
+    </Column>
+    <Column Title="描述" TData="IModule">
+        <Text>@context.Description</Text>
+    </Column>
+</Table>
+
+@code {
+    private async Task InstallModule()
+    {
+        try
+        {
+            var mainWindow = Electron.WindowManager.BrowserWindows.First();
+            var options = new OpenDialogOptions
+            {
+                Properties =
+                [
+                    OpenDialogProperty.openFile
+                ],
+                Filters =
+                [
+                    new FileFilter { Name = "ZIP Files", Extensions = ["zip"] }
+                ]
+            };
+
+            var result = await Electron.Dialog.ShowOpenDialogAsync(mainWindow, options);
+            if (result.Length == 0)
+                return;
+
+            var zipPath = result[0];
+            var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempPath);
+
+            try
+            {
+                // 解压到临时目录
+                ZipFile.ExtractToDirectory(zipPath, tempPath, true);
+
+                // 检查是否只有一个顶层文件夹
+                var topLevelItems = Directory.GetFileSystemEntries(tempPath);
+                if (topLevelItems.Length != 1 || !Directory.Exists(topLevelItems[0]))
+                {
+                    await MessageService.Error("无效的插件包：压缩包必须只包含一个顶层文件夹");
+                    return;
+                }
+
+                var moduleFolder = topLevelItems[0];
+                var moduleName = Path.GetFileName(moduleFolder);
+                var wwwrootSource = Path.Combine(moduleFolder, "wwwroot");
+                var moduleTarget = Path.Combine(Directory.GetCurrentDirectory(), "Modules", moduleName);
+                var wwwrootTarget = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+                // 处理wwwroot中的静态资源
+                if (Directory.Exists(wwwrootSource))
+                {
+                    var moduleContentTarget = Path.Combine(wwwrootTarget, "_content", moduleName);
+                    var contentSource = Path.Combine(wwwrootSource, "_content");
+
+                    // 如果存在 _content 目录，直接合并到运行目录的 wwwroot/_content
+                    if (Directory.Exists(contentSource))
+                    {
+                        CopyDirectory(contentSource, Path.Combine(wwwrootTarget, "_content"), true);
+                        Directory.Delete(contentSource, true);
+                    }
+
+                    // 将其他文件移动到 _content/{moduleName} 下
+                    Directory.CreateDirectory(moduleContentTarget);
+                    foreach (var item in Directory.GetFileSystemEntries(wwwrootSource))
+                    {
+                        var itemName = Path.GetFileName(item);
+                        if (itemName != "_content")
+                        {
+                            var targetPath = Path.Combine(moduleContentTarget, itemName);
+                            if (File.Exists(item))
+                            {
+                                File.Copy(item, targetPath, true);
+                                File.Delete(item);
+                            }
+                            else if (Directory.Exists(item))
+                            {
+                                CopyDirectory(item, targetPath, true);
+                                Directory.Delete(item, true);
+                            }
+                        }
+                    }
+
+                    Directory.Delete(wwwrootSource, true);
+                }
+
+                // 将剩余内容复制到Modules文件夹
+                Directory.CreateDirectory(Path.GetDirectoryName(moduleTarget) 
+                                          ?? throw new InvalidOperationException($"无法获取目录名称: {moduleTarget}"));
+                if (Directory.Exists(moduleTarget))
+                    Directory.Delete(moduleTarget, true);
+                
+                // 使用复制代替移动，因为可能跨卷
+                CopyDirectory(moduleFolder, moduleTarget, true);
+                Directory.Delete(moduleFolder, true);
+
+                await MessageService.Success(
+                    "插件安装成功，请重启应用以加载新安装的插件"
+                );
+            }
+            finally
+            {
+                // 清理临时目录
+                if (Directory.Exists(tempPath))
+                    Directory.Delete(tempPath, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            await MessageService.Error($"安装失败:{ex.Message}");
+        }
+    }
+
+    private static void CopyDirectory(string sourceDir, string targetDir, bool overwrite)
+    {
+        Directory.CreateDirectory(targetDir);
+
+        foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDir, file);
+            var targetPath = Path.Combine(targetDir, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath) 
+                                      ?? throw new InvalidOperationException($"无法获取目录名称: {targetPath}"));     
+            File.Copy(file, targetPath, overwrite);
+        }
+    }
+}

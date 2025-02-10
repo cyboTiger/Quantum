@@ -9,6 +9,7 @@ public record Result(bool IsSuccess, object? Value, string Message)
 
 public record Result<T>(bool IsSuccess, T? Value, string Message)
 {
+    public static implicit operator Result(Result<T> result) => new(result.IsSuccess, result.Value, result.Message);
     public static implicit operator Result<T>(Result result)
     {
         if (!result.IsSuccess)
