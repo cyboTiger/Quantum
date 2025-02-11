@@ -3,6 +3,7 @@
 @using System.IO.Compression
 @using ElectronNET.API
 @using ElectronNET.API.Entities
+@using System.Globalization
 @inject IEnumerable<IModule> Modules
 @inject IMessageService MessageService
 
@@ -22,9 +23,28 @@
     <Column Title="描述" TData="IModule">
         <Text>@context.Description</Text>
     </Column>
+    <ActionColumn>
+        <Button Type="@ButtonType.Primary" Danger OnClick="@(() => UninstallModule(context))">卸载</Button>
+    </ActionColumn>
 </Table>
 
+<style>
+    .module-list {
+        margin-top: 20px;
+    }
+    .module-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .module-item span {
+        margin-right: 10px;
+    }
+</style>
+
 @code {
+    private const string UninstallMarkFile = "TobeUninstalled.Quantum.MarkTag";
+
     private async Task InstallModule()
     {
         try
@@ -65,55 +85,17 @@
 
                 var moduleFolder = topLevelItems[0];
                 var moduleName = Path.GetFileName(moduleFolder);
-                var wwwrootSource = Path.Combine(moduleFolder, "wwwroot");
-                var moduleTarget = Path.Combine(Directory.GetCurrentDirectory(), "Modules", moduleName);
-                var wwwrootTarget = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var pendingPath = Path.Combine(Directory.GetCurrentDirectory(), "PendingModule", moduleName);
 
-                // 处理wwwroot中的静态资源
-                if (Directory.Exists(wwwrootSource))
-                {
-                    var moduleContentTarget = Path.Combine(wwwrootTarget, "_content", moduleName);
-                    var contentSource = Path.Combine(wwwrootSource, "_content");
-
-                    // 如果存在 _content 目录，直接合并到运行目录的 wwwroot/_content
-                    if (Directory.Exists(contentSource))
-                    {
-                        CopyDirectory(contentSource, Path.Combine(wwwrootTarget, "_content"), true);
-                        Directory.Delete(contentSource, true);
-                    }
-
-                    // 将其他文件移动到 _content/{moduleName} 下
-                    Directory.CreateDirectory(moduleContentTarget);
-                    foreach (var item in Directory.GetFileSystemEntries(wwwrootSource))
-                    {
-                        var itemName = Path.GetFileName(item);
-                        if (itemName != "_content")
-                        {
-                            var targetPath = Path.Combine(moduleContentTarget, itemName);
-                            if (File.Exists(item))
-                            {
-                                File.Copy(item, targetPath, true);
-                                File.Delete(item);
-                            }
-                            else if (Directory.Exists(item))
-                            {
-                                CopyDirectory(item, targetPath, true);
-                                Directory.Delete(item, true);
-                            }
-                        }
-                    }
-
-                    Directory.Delete(wwwrootSource, true);
-                }
-
-                // 将剩余内容复制到Modules文件夹
-                Directory.CreateDirectory(Path.GetDirectoryName(moduleTarget) 
-                                          ?? throw new InvalidOperationException($"无法获取目录名称: {moduleTarget}"));
-                if (Directory.Exists(moduleTarget))
-                    Directory.Delete(moduleTarget, true);
+                // 确保PendingModule目录存在
+                Directory.CreateDirectory(Path.GetDirectoryName(pendingPath) 
+                    ?? throw new InvalidOperationException($"无法获取目录名称: {pendingPath}"));
+                
+                if (Directory.Exists(pendingPath))
+                    Directory.Delete(pendingPath, true);
                 
                 // 使用复制代替移动，因为可能跨卷
-                CopyDirectory(moduleFolder, moduleTarget, true);
+                CopyDirectory(moduleFolder, pendingPath, true);
                 Directory.Delete(moduleFolder, true);
 
                 await MessageService.Success(
@@ -130,6 +112,21 @@
         catch (Exception ex)
         {
             await MessageService.Error($"安装失败:{ex.Message}");
+        }
+    }
+
+    private async Task UninstallModule(IModule module)
+    {
+        try
+        {
+            var modulePath = Path.GetDirectoryName(module.GetType().Assembly.Location) ?? throw new InvalidOperationException($"无法获取 {module.ModuleId} 所在的目录");
+
+            await File.WriteAllTextAsync(Path.Combine(modulePath, UninstallMarkFile), DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            await MessageService.Success("模块将在下次启动时被移除");
+        }
+        catch (Exception ex)
+        {
+            await MessageService.Error($"卸载失败: {ex.Message}");
         }
     }
 
