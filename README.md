@@ -1,96 +1,59 @@
-# Quantum
+# Quantum - 模块化桌面应用框架
 
-> 前人栽树，后人乘凉。但这一次，我们想和所有浙大人一起，种下一片可以自由生长的森林。
+[![.NET 9](https://img.shields.io/badge/.NET-9-512BD4)](https://dotnet.microsoft.com/)
+[![Blazor](https://img.shields.io/badge/Blazor-WebAssembly-blue)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
 
-Quantum 是一个基于 .NET 9 和 Blazor 的桌面端工具箱框架，旨在为浙江大学校园生活提供一站式工具解决方案。通过模块化设计和标准化接口，我们致力于构建一个可持续发展的工具生态系统。
+## 🌟 项目简介
 
-## 开发计划
+一个基于.NET 9和Blazor构建的现代化桌面应用框架，采用模块化架构设计。通过内置的模块管理器，用户可以轻松安装/卸载功能模块，开发者可以快速创建可扩展的桌面应用程序。
 
-### 模块开发
-- [ ] 成绩、课程查询模块
-- [ ] 学在浙大、PTA TODO集成模块
+**核心特性：**
+- 🧩 模块化架构 - 功能按模块动态加载
+- 📦 内置模块管理器 - 支持模块的安装/卸载/更新
+- 🚀 跨平台 - 支持Windows/macOS/Linux
 
-### 框架开发
-- [ ] 实现动态加载程序集
+## ⚡ 快速开始
 
-## 特性
+### 前置条件
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Node.js](https://nodejs.org/en/download/)（依赖传递自 [Electron.NET](https://github.com/ElectronNET/Electron.NET)）
+- ElectronNET.CLI
+    ```
+    dotnet tool install ElectronNET.CLI -g
+    ```
 
-- **模块沙盒机制**：每个功能模块（如选课、查分、校车等）独立运行，支持热插拔
-- **统一开发范式**：基于 .NET 9 的标准化模块接口规范
-- **核心服务池**：内置统一身份认证引擎和通知系统等基础设施
-- **跨平台支持**：基于现代 Web 技术，提供一致的跨平台体验
+### 运行程序
+```bash
+# 克隆仓库
+git clone https://github.com/XmmShp/Quantum.git
 
-## 技术架构
+# 进入Quantum.Shell运行目录
+cd Quantum
+cd Quantum.Shell
 
-### Quantum.Infrastructure
-框架基础层，提供：
-- 抽象接口（Abstractions）
-- 扩展方法（Extensions）
-- 数据模型（Models）
-- 实用工具（Utilities）
+# 启动项目
 
-### Quantum.Service
-服务集成层，整合校园各类在线服务：
-- chalaoshi.click
-- zdbk.zju.edu.cn
-- zjuam.zju.edu.cn
-等
+## 以调试方式启动Quantum
+electronize start /PublishSingleFile false /dotnet-configuration Debug
 
-### Quantum.UI
-用户界面层，包含：
-- 课程选择助手（CourseSelectionAssistant）
-- 主界面（Shell）
-- 组件库
-- 静态资源
+## 以发布方式启动Quantum
+electronize start /PublishSingleFile false /dotnet-configuration Release
 
-> 注：未来版本中，Quantum 核心将只包含 Infrastructure 和 Shell，其他功能将以模块形式提供。
+## 将项目打包为可安装程序
+electronize build /PublishSingleFile false /target [win|osx|linux] 
+```
 
-## 参与贡献
+## 🚧 项目路线图
+- [ ] 模块市场
+- [ ] 自动更新系统
+- [ ] 主题/皮肤支持
 
-我们欢迎各类贡献，包括但不限于：
+## 🤝 贡献指南
+欢迎通过以下方式参与贡献：
+1. Fork仓库并创建特性分支
+2. 提交Pull Request
+3. 遵循[代码规范](CONTRIBUTING.md)
+4. 使用有意义的commit message
 
-### 功能模块
-- 多平台 TodoList 集成
-- 校车提醒
-- 更多创意...
-
-### 服务扩展
-- AI 助手引擎
-- 校园 IoT 接入
-- 其他服务集成
-
-### 主题定制
-- 紫金港主题
-- 玉泉主题
-- 舟山主题
-- 海宁主题
-
-## 开发环境
-
-- .NET 9
-- Blazor
-- Electron (正在考虑迁移到更轻量级的跨平台框架)
-
-## 相关链接
-
-GitLab 仓库：[Quantum](https://git.zju.edu.cn/quantum/quantum)
-
-## 开发团队
-
-- Shoming (lch)
-- DDKing (lhb)
-- 春风10007 (yxt)
-- George (hzh)
-
-## 愿景
-
-Quantum 致力于成为连接校园服务和个人需求的桥梁，我们期待看到：
-- 大二学生开发并分享「大物实验数据处理工具」
-- 研究生将论文查重工具封装为模块
-- 更多由浙大人创造的优质工具
-
-通过标准化的工具箱框架，我们希望能够解决当前校园工具分散、难以维护的问题，为浙大学子提供更好的数字化校园体验。
-
-## 许可证
-
-[MIT许可证](LICENSE)
+## 📄 许可证
+MIT License - 详见 [LICENSE](LICENSE)
