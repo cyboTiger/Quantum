@@ -1,0 +1,40 @@
+name: 💡 功能建议
+description: 为这个项目提出一个想法
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您为项目提出新的想法！
+  
+  - type: textarea
+    id: problem
+    attributes:
+      label: 相关问题
+      description: 请描述您的功能建议是否与某个问题相关？
+      placeholder: "例如：我在使用时总是遇到困扰..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 期望的解决方案
+      description: 描述您想要的解决方案
+      placeholder: "清晰地描述您希望发生的事情"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案
+      description: 描述您考虑过的任何替代解决方案或功能
+      placeholder: "您考虑过的其他方案..."
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充说明
+      description: 添加任何其他上下文或截图
