@@ -289,7 +289,3 @@ __pycache__/
 *.xsd.cs
 
 # Custom rules
-data/
-/Data/*
-!/Data/teachers.json
-logs/
