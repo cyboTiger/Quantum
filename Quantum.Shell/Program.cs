@@ -55,7 +55,10 @@ builder.Services.AddAntDesign()
                 .AddSingleton<ModuleLoader>()
                 .AddSingleton(builder.Services);
 
+#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
 var provider = builder.Services.BuildServiceProvider();
+#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
+
 var loader = provider.GetRequiredService<ModuleLoader>();
 loader.ServiceProvider = provider;
 await loader.LoadModulesAsync();
