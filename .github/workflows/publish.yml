@@ -98,11 +98,13 @@ jobs:
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ github.event.inputs.version }}
           name: Release v${{ github.event.inputs.version }}
           draft: true
           prerelease: false
           files: |
-            artifacts/**/*.exe
+            artifacts/**/*Setup*.exe
             artifacts/**/*.AppImage
             artifacts/**/*.deb
             artifacts/**/*.dmg
+          fail_on_unmatched_files: true
