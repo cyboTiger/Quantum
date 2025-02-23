@@ -14,11 +14,11 @@
     "buildVersion": "1.1.0",
     "compression": "maximum",
     "directories": {
-      "output": "./bin/Desktop"
+      "output": "../../../bin/Desktop"
     },
     "extraResources": [
       {
-        "from": "./bin",
+        "from": "./bin/Release/net9.0",
         "to": "bin",
         "filter": ["**/*"]
       }
