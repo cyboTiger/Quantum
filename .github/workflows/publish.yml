@@ -13,9 +13,27 @@ env:
   CONFIGURATION: 'Release'
 
 jobs:
-  publish-windows:
-    name: Publish Windows
-    runs-on: windows-latest
+  publish:
+    name: Publish ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - os: Windows
+            runner: windows-latest
+            target: win
+            path-separator: '\'
+            dotnet-tools: '%USERPROFILE%\.dotnet\tools'
+          - os: Linux
+            runner: ubuntu-latest
+            target: linux
+            path-separator: '/'
+            dotnet-tools: '$HOME/.dotnet/tools'
+          - os: macOS
+            runner: macos-latest
+            target: osx
+            path-separator: '/'
+            dotnet-tools: '$HOME/.dotnet/tools'
     steps:
     - uses: actions/checkout@v4
       with:
@@ -36,127 +54,42 @@ jobs:
     - name: Install ElectronNET.CLI
       run: |
         dotnet tool install ElectronNET.CLI -g
-        echo "%USERPROFILE%\.dotnet\tools" >> $GITHUB_PATH
+        echo "${{ matrix.dotnet-tools }}" >> $GITHUB_PATH
 
-    - name: Update Version
+    - name: Update Version (Windows)
+      if: matrix.os == 'Windows'
       run: |
-        $manifestPath = "Runtime/electron.manifest.json"
+        $manifestPath = "Runtime${{ matrix.path-separator }}electron.manifest.json"
         $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
         $manifest.build.buildVersion = "${{ github.event.inputs.version }}"
         $manifest | ConvertTo-Json -Depth 32 | Set-Content $manifestPath
 
-    - name: Build and Package Runtime
-      run: electronize build /PublishSingleFile false /target win -c ${{ env.CONFIGURATION }}
-      working-directory: ./Runtime
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Windows Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-artifacts
-        path: ./Runtime/bin/Desktop
-
-  publish-linux:
-    name: Publish Linux
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: |
-          6.0.x
-          ${{ env.DOTNET_VERSION }}
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-
-    - name: Install Linux Dependencies
+    - name: Update Version (Unix)
+      if: matrix.os != 'Windows'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libx11-dev libxkbfile-dev
-
-    - name: Install ElectronNET.CLI
-      run: |
-        dotnet tool install ElectronNET.CLI -g
-        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-    - name: Update Version
-      run: |
-        manifestPath="Runtime/electron.manifest.json"
+        manifestPath="Runtime${{ matrix.path-separator }}electron.manifest.json"
         manifest=$(cat $manifestPath)
         echo "$manifest" | jq --arg version "${{ github.event.inputs.version }}" '.build.buildVersion = $version' > $manifestPath
 
     - name: Build and Package Runtime
-      run: electronize build /PublishSingleFile false /target linux -c ${{ env.CONFIGURATION }}
+      run: electronize build /PublishSingleFile false /target ${{ matrix.target }} /dotnet-configuration ${{ env.CONFIGURATION }}
       working-directory: ./Runtime
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload Linux Artifacts
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: linux-artifacts
-        path: ./Runtime/bin/Desktop
-
-  publish-macos:
-    name: Publish macOS
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: |
-          6.0.x
-          ${{ env.DOTNET_VERSION }}
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-
-    - name: Install ElectronNET.CLI
-      run: |
-        dotnet tool install ElectronNET.CLI -g
-        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-    - name: Update Version
-      run: |
-        manifestPath="Runtime/electron.manifest.json"
-        manifest=$(cat $manifestPath)
-        echo "$manifest" | jq --arg version "${{ github.event.inputs.version }}" '.build.buildVersion = $version' > $manifestPath
-
-    - name: Build and Package Runtime
-      run: electronize build /PublishSingleFile false /target osx -c ${{ env.CONFIGURATION }}
-      working-directory: ./Runtime
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload macOS Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-artifacts
+        name: ${{ matrix.os }}-artifacts
         path: ./Runtime/bin/Desktop
 
   create-release:
     name: Create Release
-    needs: [publish-windows, publish-linux, publish-macos]
+    needs: [publish]
     runs-on: ubuntu-latest
     steps:
       - name: Create Release
         uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ github.event.inputs.version }}
           release_name: Release v${{ github.event.inputs.version }}

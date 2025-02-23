@@ -26,11 +26,6 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
-    - name: Install Linux Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libx11-dev libxkbfile-dev
-    
     - name: Restore dependencies
       run: |
         dotnet restore ./SDK/Quantum.Sdk/Quantum.Sdk.csproj
