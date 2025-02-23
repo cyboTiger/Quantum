@@ -45,7 +45,7 @@ jobs:
       run: |
         dotnet restore ./SDK/Quantum.Sdk/Quantum.Sdk.csproj
         dotnet restore ./SDK/Quantum.BundleTool/Quantum.BundleTool.csproj
-        dotnet restore ./Runtime/Quantum.Runtime/Quantum.Runtime.csproj
+        dotnet restore ./Runtime/Quantum.Runtime.csproj
     
     - name: Build SDK Projects
       run: |
@@ -54,7 +54,7 @@ jobs:
     
     - name: Build and Package Runtime
       run: electronize build /PublishSingleFile false /target linux -c ${{ env.CONFIGURATION }}
-      working-directory: ./Runtime/Quantum.Runtime
+      working-directory: ./Runtime
 
     - name: Upload Linux Artifacts
       uses: actions/upload-artifact@v4
