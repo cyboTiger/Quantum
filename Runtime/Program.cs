@@ -61,6 +61,12 @@ var provider = builder.Services.BuildServiceProvider();
 
 var loader = provider.GetRequiredService<ModuleLoader>();
 loader.ServiceProvider = provider;
+
+#region MODULE_DEBUG
+// 在这里手动加载模块，方便调试
+// loader.LoadModule(typeof(IModule).Assembly);
+#endregion
+
 await loader.LoadModulesAsync();
 
 var app = builder.Build();
@@ -129,6 +135,8 @@ else
 {
     await app.RunAsync();
 }
+
+return;
 
 static void HandlePendingModules()
 {

@@ -49,6 +49,12 @@ internal class ModuleLoader(ILogger<ModuleLoader> logger, IServiceCollection ser
         logger.LogInformation("All modules loaded successfully. Total modules: {Count}", _loadedModules.Count);
     }
 
+    public void LoadModule(Assembly assembly)
+    {
+        _loadedAssemblies.Add(assembly);
+        RegisterModule(assembly);
+    }
+
     private void RegisterModule(Assembly assembly)
     {
         var moduleTypes = assembly.GetTypes()
