@@ -85,7 +85,7 @@ app.UseStaticFiles(new StaticFileOptions
     .UseCors("AllowAll")
     .UseAntiforgery();
 
-app.MapRazorComponents<Quantum.Shell.App>()
+app.MapRazorComponents<Quantum.Runtime.App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies([.. loader.LoadedAssemblies]);
 

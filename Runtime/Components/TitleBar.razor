@@ -1,5 +1,5 @@
 @using ElectronNET.API
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 @inject NavigationManager NavigationManager
 
 <div class="title-bar">
@@ -127,13 +127,13 @@
 
     private async Task ClearAllCache()
     {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", "确定要清除所有缓存吗？这将会清除所有本地数据并刷新页面。");
+        var confirmed = await Js.InvokeAsync<bool>("confirm", "确定要清除所有缓存吗？这将会清除所有本地数据并刷新页面。");
         if (!confirmed) return;
 
         try
         {
             // 清除浏览器缓存
-            await JS.InvokeVoidAsync("eval", @"
+            await Js.InvokeVoidAsync("eval", @"
                 // 清除 localStorage
                 localStorage.clear();
                 // 清除 sessionStorage
@@ -161,7 +161,7 @@
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"清除缓存时发生错误：{ex.Message}");
+            await Js.InvokeVoidAsync("alert", $"清除缓存时发生错误：{ex.Message}");
         }
     }
 }

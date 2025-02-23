@@ -12,16 +12,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Quantum.Infrastructure\Quantum.Infrastructure.csproj" />
+	  <ProjectReference Include="..\SDK\Quantum.Sdk\Quantum.Sdk.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Content Update="electron.manifest.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Properties\PublishProfiles\" />
 	</ItemGroup>
 </Project>
