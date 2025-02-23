@@ -14,7 +14,7 @@
     "buildVersion": "1.1.0",
     "compression": "maximum",
     "directories": {
-      "output": "../../../Release"
+      "output": "./bin/Desktop"
     },
     "extraResources": [
       {
@@ -41,6 +41,37 @@
           "arch": ["x64"]
         }
       ]
+    },
+    "linux": {
+      "icon": "",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Development",
+      "maintainer": "Quantum Team",
+      "synopsis": "Quantum Development Environment"
+    },
+    "mac": {
+      "icon": "",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.developer-tools",
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "nsis": {
       "oneClick": false,

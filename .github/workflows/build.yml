@@ -1,4 +1,4 @@
-name: Windows Build
+name: Build Check
 
 on:
   push:
@@ -13,8 +13,8 @@ env:
 
 jobs:
   build:
-    name: Build Windows
-    runs-on: windows-latest
+    name: Build Check
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
@@ -26,15 +26,10 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-
-    - name: Install ElectronNET.CLI
+    - name: Install Linux Dependencies
       run: |
-        dotnet tool install ElectronNET.CLI -g
-        echo "%USERPROFILE%\.dotnet\tools" >> $GITHUB_PATH
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libxkbfile-dev
     
     - name: Restore dependencies
       run: |
@@ -46,14 +41,6 @@ jobs:
       run: |
         dotnet build ./SDK/Quantum.Sdk/Quantum.Sdk.csproj -c ${{ env.CONFIGURATION }} --no-restore
         dotnet build ./SDK/Quantum.BundleTool/Quantum.BundleTool.csproj -c ${{ env.CONFIGURATION }} --no-restore
-    
-    - name: Build and Package Runtime
-      run: electronize build /PublishSingleFile false /target win -c ${{ env.CONFIGURATION }}
-      working-directory: ./Runtime
 
-    - name: Upload Windows Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-artifacts
-        path: |
-          ./Runtime/Quantum.Runtime/bin/Desktop
+    - name: Build Runtime
+      run: dotnet build ./Runtime/Quantum.Runtime.csproj -c ${{ env.CONFIGURATION }} --no-restore
