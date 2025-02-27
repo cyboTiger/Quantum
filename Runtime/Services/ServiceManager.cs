@@ -1,4 +1,4 @@
-using Quantum.Infrastructure.Abstractions;
+using Quantum.Sdk.Abstractions;
 using Quantum.Sdk.Services;
 
 namespace Quantum.Runtime.Services;

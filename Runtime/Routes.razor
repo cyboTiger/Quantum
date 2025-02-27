@@ -1,6 +1,6 @@
-@using Quantum.Infrastructure.Extensions
 @using Quantum.Runtime.Layout
 @using Quantum.Sdk
+@using Quantum.Sdk.Extensions
 @inject IEnumerable<IModule> Modules
 
 <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="Modules.GetAssemblies()">

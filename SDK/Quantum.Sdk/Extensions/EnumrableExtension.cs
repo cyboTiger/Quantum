@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Quantum.Infrastructure.Extensions;
+namespace Quantum.Sdk.Extensions;
 
 /// <summary>
 /// 可枚举类型扩展方法类

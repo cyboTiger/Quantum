@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using Quantum.Infrastructure.Models;
+using Quantum.Sdk.Services;
 
 namespace Quantum.Runtime.Services;
 

@@ -1,4 +1,4 @@
-namespace Quantum.Infrastructure.Abstractions;
+namespace Quantum.Sdk.Abstractions;
 
 /// <summary>
 /// 持久化服务接口

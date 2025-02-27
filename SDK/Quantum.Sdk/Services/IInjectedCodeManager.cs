@@ -1,4 +1,4 @@
-namespace Quantum.Infrastructure.Models;
+namespace Quantum.Sdk.Services;
 
 /// <summary>
 /// 管理注入到App.razor的代码片段

@@ -1,6 +1,6 @@
 using AntDesign;
 
-namespace Quantum.Infrastructure.Extensions;
+namespace Quantum.Sdk.Extensions;
 
 /// <summary>
 /// 消息服务扩展方法类

@@ -1,5 +1,4 @@
 using ElectronNET.API;
-using Quantum.Infrastructure.Models;
 using Quantum.Sdk.Services;
 
 namespace Quantum.Sdk;
