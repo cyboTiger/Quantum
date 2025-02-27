@@ -1,7 +1,8 @@
 using ElectronNET.API;
 using ElectronNET.API.Entities;
-using Quantum.Infrastructure.Models;
-using Quantum.Shell.Services;
+using Quantum.Runtime.Services;
+using Quantum.Sdk;
+
 
 #if RELEASE
 using Serilog;
@@ -34,6 +35,31 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 #endif
 
+var preloadServices = new ServiceCollection();
+preloadServices.AddLogging()
+    .AddSingleton<InjectedCodeManager>()
+    .AddSingleton(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<ModuleManager>>();
+        var moduleManager = new ModuleManager(logger) { Activator = sp, HostServices = builder.Services };
+        return moduleManager;
+    })
+    .AddSingleton(sp =>
+    {
+        var serviceManager = new ServiceManager(builder.Services);
+        return serviceManager;
+    })
+    .AddSingleton<Quantum.Runtime.Services.Quantum>();
+
+#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
+var preloadProvider = preloadServices.BuildServiceProvider();
+#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
+
+var quantum = preloadProvider.GetRequiredService<Quantum.Runtime.Services.Quantum>();
+var injectedCodeManager = preloadProvider.GetRequiredService<InjectedCodeManager>();
+var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
+await moduleManager.LoadModulesAsync();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -48,26 +74,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-var codeManager = new InjectedCodeManager();
-
 builder.Services.AddAntDesign()
-                .AddSingleton(codeManager)
-                .AddSingleton<ModuleLoader>()
-                .AddSingleton(builder.Services);
-
-#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-var provider = builder.Services.BuildServiceProvider();
-#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-
-var loader = provider.GetRequiredService<ModuleLoader>();
-loader.ServiceProvider = provider;
+    .AddSingleton<IQuantum>(quantum)
+    .AddSingleton(injectedCodeManager);
 
 #region MODULE_DEBUG
 // 在这里手动加载模块，方便调试
 // loader.LoadModule(typeof(IModule).Assembly);
 #endregion
-
-await loader.LoadModulesAsync();
 
 var app = builder.Build();
 
@@ -93,7 +107,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.MapRazorComponents<Quantum.Runtime.App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies([.. loader.LoadedAssemblies]);
+    .AddAdditionalAssemblies([.. moduleManager.LoadedAssemblies]);
 
 if (HybridSupport.IsElectronActive)
 {
@@ -115,6 +129,7 @@ if (HybridSupport.IsElectronActive)
 #endif
         }
     });
+    quantum.Window = window;
 
     window.RemoveMenu();
 

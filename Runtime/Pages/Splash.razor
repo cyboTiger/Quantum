@@ -1,9 +1,9 @@
 @page "/"
-@using System.Text.Json.Serialization
-@using Quantum.Infrastructure.Utilities
-@using System.Diagnostics.CodeAnalysis
 @using Quantum.Infrastructure.Abstractions
 @using Quantum.Runtime.Components
+@using System.Diagnostics.CodeAnalysis
+@using System.Text.Json.Serialization
+@using Quantum.Sdk.Utilities
 @inject NavigationManager NavigationManager
 @inject IEnumerable<IInitializableService> InitializableServices
 
@@ -27,7 +27,7 @@
                 <div class="hitokoto-section">
                     <div class="hitokoto-content">@_hitokoto.Content</div>
                     <div class="hitokoto-from">
-                        —— @_hitokoto.From 
+                        —— @_hitokoto.From
                         @if (!string.IsNullOrWhiteSpace(_hitokoto.FromWho))
                         {
                             <span>「@_hitokoto.FromWho」</span>
@@ -102,7 +102,7 @@
     private async Task InitializeApplicationAsync()
     {
         UpdateProgress("正在初始化服务...", 10);
-        
+
         var services = InitializableServices.ToList();
         if (!services.Any())
         {

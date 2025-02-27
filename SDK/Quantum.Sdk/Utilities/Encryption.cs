@@ -1,10 +1,16 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Quantum.Infrastructure.Utilities;
+namespace Quantum.Sdk.Utilities;
 
+/// <summary>
+/// 加密工具类，提供基于设备特定密钥的AES加密和解密功能
+/// </summary>
 public static class Encryption
 {
+    /// <summary>
+    /// 设备特定的密钥和初始化向量，基于设备名称生成
+    /// </summary>
     private static readonly Lazy<(byte[] Key, byte[] IV)> DeviceSpecificKeyIv = new(() =>
     {
         var deviceId = Environment.MachineName;
@@ -17,7 +23,12 @@ public static class Encryption
         return (deriveBytes.GetBytes(32), deriveBytes.GetBytes(16));
     });
 
-    public static string Encrypt(this string plainText)
+    /// <summary>
+    /// 使用AES算法加密字符串
+    /// </summary>
+    /// <param name="plainText">要加密的明文</param>
+    /// <returns>Base64编码的密文</returns>
+    public static string Encrypt(string plainText)
     {
         using var aes = Aes.Create();
         aes.Key = DeviceSpecificKeyIv.Value.Key;
@@ -29,7 +40,12 @@ public static class Encryption
         return Convert.ToBase64String(cipherBytes);
     }
 
-    public static string Decrypt(this string cipherText)
+    /// <summary>
+    /// 使用AES算法解密字符串
+    /// </summary>
+    /// <param name="cipherText">要解密的Base64编码密文</param>
+    /// <returns>解密后的明文</returns>
+    public static string Decrypt(string cipherText)
     {
         using var aes = Aes.Create();
         aes.Key = DeviceSpecificKeyIv.Value.Key;

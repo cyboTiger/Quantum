@@ -1,16 +1,17 @@
-using Quantum.Infrastructure.Abstractions;
-using Quantum.Infrastructure.Models;
+using Quantum.Sdk;
+using Quantum.Sdk.Services;
+using Quantum.Sdk.Utilities;
 using System.Reflection;
 
-namespace Quantum.Shell.Services;
+namespace Quantum.Runtime.Services;
 
-internal class ModuleLoader(ILogger<ModuleLoader> logger, IServiceCollection services, InjectedCodeManager codeManager)
+internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
 {
     private readonly List<IModule> _loadedModules = [];
     private readonly List<Assembly> _loadedAssemblies = [];
-    public IServiceProvider ServiceProvider { get; set; } = null!;
+    public required IServiceCollection HostServices { get; init; }
+    public required IServiceProvider Activator { get; init; }
     public IReadOnlyList<Assembly> LoadedAssemblies => _loadedAssemblies.AsReadOnly();
-
 
     public async Task LoadModulesAsync()
     {
@@ -42,7 +43,7 @@ internal class ModuleLoader(ILogger<ModuleLoader> logger, IServiceCollection ser
 
         // 调用所有模块的 OnAllLoaded 方法
         var initTasks = _loadedModules.Select(module =>
-            module.OnAllLoadedAsync(_loadedModules)).ToList();
+            module.OnAllLoadedAsync()).ToList();
 
         await Task.WhenAll(initTasks);
 
@@ -73,32 +74,24 @@ internal class ModuleLoader(ILogger<ModuleLoader> logger, IServiceCollection ser
 
         var moduleType = moduleTypes[0];
         // 创建模块实例并添加到已加载模块列表
-        var module = (IModule)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType);
+        var module = (IModule)ActivatorUtilities.CreateInstance(Activator, moduleType);
         _loadedModules.Add(module);
 
-        // 注册模块类型本身
-        services.AddSingleton(moduleType, module);
-
         // 注册为 IModule
-        services.AddSingleton(module);
+        HostServices.AddSingleton(module);
 
-        // 如果实现了 IUiModule，额外注册
-        if (typeof(IUiModule).IsAssignableFrom(moduleType))
-        {
-            var moduleName = assembly.GetName().Name;
-            var styleFile = $"_content/{moduleName}/{moduleName}.styles.css";
-            var stylePath = Path.Combine(AppContext.BaseDirectory, "wwwroot", styleFile);
+        logger.LogInformation("Registered module {ModuleId} of type {ModuleType}", module.ModuleId, moduleType.FullName);
+    }
 
-            if (File.Exists(stylePath))
-            {
-                codeManager.AddToHead($"<link rel='stylesheet' href='{styleFile}' />");
-                logger.LogInformation("Injected stylesheet for module {ModuleId}: {StyleFile}", module.ModuleId, styleFile);
-            }
-            services.AddSingleton((IUiModule)module);
-        }
-
-        logger.LogInformation("Registered module {ModuleId} of type {ModuleType}",
-            module.ModuleId, moduleType.FullName);
-
+    public Result<IModule> GetModule(string moduleId, Version? minVersion = null, Version? maxVersion = null)
+    {
+        var module = _loadedModules.FirstOrDefault(m => m.ModuleId == moduleId);
+        if (module is null)
+        { return Result.Failure($"{moduleId} is not loaded"); }
+        if (minVersion is not null && module.Version < minVersion)
+        { return Result.Failure($"{moduleId} version is less than required version {minVersion}"); }
+        if (maxVersion is not null && module.Version > maxVersion)
+        { return Result.Failure($"{moduleId} version is greater than required version {maxVersion}"); }
+        return Result.Success(module);
     }
 }
