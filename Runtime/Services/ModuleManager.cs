@@ -8,12 +8,24 @@ namespace Quantum.Runtime.Services;
 internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
 {
     private readonly List<IModule> _loadedModules = [];
-    private readonly List<Assembly> _loadedAssemblies = [];
     public required IServiceCollection HostServices { get; init; }
     public required IServiceProvider Activator { get; init; }
-    public IReadOnlyList<Assembly> LoadedAssemblies => _loadedAssemblies.AsReadOnly();
+    public List<Assembly> LoadedAssemblies { get; } = [];
 
     public async Task LoadModulesAsync()
+    {
+        LoadModules();
+
+        // 调用所有模块的 OnAllLoaded 方法
+        var initTasks = _loadedModules.Select(module =>
+            module.OnAllLoadedAsync()).ToList();
+
+        await Task.WhenAll(initTasks);
+
+        logger.LogInformation("All modules loaded successfully. Total modules: {Count}", _loadedModules.Count);
+    }
+
+    private void LoadModules()
     {
         // 扫描模块目录
         var modulesPath = Path.Combine(AppContext.BaseDirectory, "Modules");
@@ -36,23 +48,15 @@ internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
             }
 
             var assembly = Assembly.LoadFrom(dllPath);
-            _loadedAssemblies.Add(assembly);
+            LoadedAssemblies.Add(assembly);
         }
 
-        _loadedAssemblies.ForEach(RegisterModule);
-
-        // 调用所有模块的 OnAllLoaded 方法
-        var initTasks = _loadedModules.Select(module =>
-            module.OnAllLoadedAsync()).ToList();
-
-        await Task.WhenAll(initTasks);
-
-        logger.LogInformation("All modules loaded successfully. Total modules: {Count}", _loadedModules.Count);
+        LoadedAssemblies.ForEach(RegisterModule);
     }
 
     public void LoadModule(Assembly assembly)
     {
-        _loadedAssemblies.Add(assembly);
+        LoadedAssemblies.Add(assembly);
         RegisterModule(assembly);
     }
 
@@ -79,6 +83,11 @@ internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
 
         // 注册为 IModule
         HostServices.AddSingleton(module);
+
+        if (module is IUiModule uiModule)
+        {
+            HostServices.AddSingleton(uiModule);
+        }
 
         logger.LogInformation("Registered module {ModuleId} of type {ModuleType}", module.ModuleId, moduleType.FullName);
     }

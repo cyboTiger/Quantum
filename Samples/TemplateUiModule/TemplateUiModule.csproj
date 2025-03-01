@@ -8,8 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Quantum.Infrastructure\Quantum.Infrastructure.csproj" />
-    <ProjectReference Include="..\TemplateModule\TemplateModule.csproj" />
+    <ProjectReference Include="..\..\SDK\Quantum.Sdk\Quantum.Sdk.csproj" />
+    <ProjectReference Include="..\TemplateModule\TemplateModule.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
 	<ItemGroup>

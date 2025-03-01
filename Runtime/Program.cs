@@ -44,20 +44,30 @@ preloadServices.AddLogging()
         var moduleManager = new ModuleManager(logger) { Activator = sp, HostServices = builder.Services };
         return moduleManager;
     })
-    .AddSingleton(sp =>
+    .AddSingleton<IQuantum>(sp =>
     {
-        var serviceManager = new ServiceManager(builder.Services);
-        return serviceManager;
-    })
-    .AddSingleton<Quantum.Runtime.Services.Quantum>();
+        var moduleManager = sp.GetRequiredService<ModuleManager>();
+        var codeManager = sp.GetRequiredService<InjectedCodeManager>();
+        var quantum = new Quantum.Runtime.Services.Quantum { HostServices = builder.Services, ModuleManager = moduleManager, InjectedCodeManager = codeManager };
+        return quantum;
+    });
 
 #pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
 var preloadProvider = preloadServices.BuildServiceProvider();
 #pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
 
-var quantum = preloadProvider.GetRequiredService<Quantum.Runtime.Services.Quantum>();
+var quantum = (Quantum.Runtime.Services.Quantum)preloadProvider.GetRequiredService<IQuantum>();
 var injectedCodeManager = preloadProvider.GetRequiredService<InjectedCodeManager>();
 var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
+
+#region MODULE_DEBUG
+#if DEBUG
+// 在这里手动加载模块，方便调试
+//moduleManager.LoadModule(typeof(TemplateModule.TemplateModule).Assembly);
+//moduleManager.LoadModule(typeof(TemplateUiModule.TemplateUiModule).Assembly);
+#endif
+#endregion
+
 await moduleManager.LoadModulesAsync();
 
 // Add services to the container.
@@ -77,11 +87,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddAntDesign()
     .AddSingleton<IQuantum>(quantum)
     .AddSingleton(injectedCodeManager);
-
-#region MODULE_DEBUG
-// 在这里手动加载模块，方便调试
-// loader.LoadModule(typeof(IModule).Assembly);
-#endregion
 
 var app = builder.Build();
 
