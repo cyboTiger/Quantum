@@ -290,3 +290,4 @@ __pycache__/
 
 # Custom rules
 *.zip
+data/
