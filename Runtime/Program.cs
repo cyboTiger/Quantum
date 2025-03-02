@@ -68,7 +68,7 @@ var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
 #endif
 #endregion
 
-await moduleManager.LoadModulesAsync();
+await moduleManager.RegisterModulesAsync();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

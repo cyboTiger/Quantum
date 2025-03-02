@@ -12,9 +12,10 @@ internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
     public required IServiceProvider Activator { get; init; }
     public List<Assembly> LoadedAssemblies { get; } = [];
 
-    public async Task LoadModulesAsync()
+    public async Task RegisterModulesAsync()
     {
         LoadModules();
+        LoadedAssemblies.ForEach(RegisterModule);
 
         // 调用所有模块的 OnAllLoaded 方法
         var initTasks = _loadedModules.Select(module =>
@@ -50,14 +51,11 @@ internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
             var assembly = Assembly.LoadFrom(dllPath);
             LoadedAssemblies.Add(assembly);
         }
-
-        LoadedAssemblies.ForEach(RegisterModule);
     }
 
     public void LoadModule(Assembly assembly)
     {
         LoadedAssemblies.Add(assembly);
-        RegisterModule(assembly);
     }
 
     private void RegisterModule(Assembly assembly)
