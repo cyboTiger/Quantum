@@ -2,7 +2,7 @@
 @inject IEnumerable<IUiModule> Modules
 @inject NavigationManager NavigationManager
 
-@if (_currentModule != null)
+@if (_currentModule?.GetNavigationItems().ToList() is {} navigationItems && navigationItems.Any())
 {
     <Sider Class="site-sidebar"
            Collapsible
@@ -15,7 +15,7 @@
               InlineCollapsed="@_collapsed"
               SelectedKeys="@(new[] { _currentItemKey })"
               DefaultOpenKeys="@(new[] { _currentModuleKey })">
-            @foreach (var item in _currentModule.GetNavigationItems())
+            @foreach (var item in navigationItems)
             {
                 if (item.Children.Any())
                 {
