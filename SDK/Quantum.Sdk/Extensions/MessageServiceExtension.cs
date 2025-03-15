@@ -1,4 +1,6 @@
 using AntDesign;
+using Microsoft.AspNetCore.Components;
+using OneOf;
 
 namespace Quantum.Sdk.Extensions;
 
@@ -8,60 +10,61 @@ namespace Quantum.Sdk.Extensions;
 public static class MessageServiceExtension
 {
     /// <summary>
-    /// 在异步操作执行期间显示加载消息
+    /// 在执行异步操作时显示加载消息
     /// </summary>
     /// <typeparam name="T">异步操作的返回类型</typeparam>
     /// <param name="messageService">消息服务</param>
-    /// <param name="asyncAction">要执行的异步操作</param>
-    /// <param name="loadingMessage">加载时显示的消息</param>
-    /// <param name="onFinish">异步操作完成时执行的操作</param>
+    /// <param name="asyncFunc">要执行的异步操作</param>
+    /// <param name="content">加载过程中显示的消息</param>
     /// <param name="onClose">加载消息关闭时执行的操作</param>
     /// <returns>异步操作的结果</returns>
     public static async Task<T> LoadingWhen<T>(
         this IMessageService messageService,
-        Func<Task<T>> asyncAction,
-        string loadingMessage,
-        Action? onFinish = null,
+        Func<Task<T>> asyncFunc,
+        OneOf<string, RenderFragment, MessageConfig> content,
         Action? onClose = null
-        )
+    )
     {
-        var task = messageService.Loading(loadingMessage, 0, onClose);
+        if (content.IsT2)
+        {
+            content.AsT2.Duration = 0;
+        }
+        var task = messageService.Loading(content, 0, onClose);
         try
         {
-            return await asyncAction();
+            return await asyncFunc();
         }
         finally
         {
-            onFinish?.Invoke();
             task.Start();
         }
     }
 
-
     /// <summary>
-    /// 在异步操作执行期间显示加载消息（无返回值版本）
+    /// 在执行异步操作时显示加载消息（无返回值版本）
     /// </summary>
     /// <param name="messageService">消息服务</param>
-    /// <param name="asyncAction">要执行的异步操作</param>
-    /// <param name="loadingMessage">加载时显示的消息</param>
-    /// <param name="onFinish">异步操作完成时执行的操作</param>
+    /// <param name="asyncFunc">要执行的异步操作</param>
+    /// <param name="content">加载过程中显示的消息</param>
     /// <param name="onClose">加载消息关闭时执行的操作</param>
     public static async Task LoadingWhen(
         this IMessageService messageService,
-        Func<Task> asyncAction,
-        string loadingMessage,
-        Action? onFinish = null,
+        Func<Task> asyncFunc,
+        OneOf<string, RenderFragment, MessageConfig> content,
         Action? onClose = null
-        )
+    )
     {
-        var task = messageService.Loading(loadingMessage, 0, onClose);
+        if (content.IsT2)
+        {
+            content.AsT2.Duration = 0;
+        }
+        var task = messageService.Loading(content, 0, onClose);
         try
         {
-            await asyncAction();
+            await asyncFunc();
         }
         finally
         {
-            onFinish?.Invoke();
             task.Start();
         }
     }
