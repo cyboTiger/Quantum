@@ -2,6 +2,8 @@ using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Quantum.Runtime.Services;
 using Quantum.Sdk;
+using Quantum.Sdk.Extensions;
+using Quantum.Sdk.Services;
 
 
 #if RELEASE
@@ -71,7 +73,10 @@ var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
 await moduleManager.RegisterModulesAsync();
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
+builder.Services
+    .AddEagerInitializeService<ExtensionMarketService, ExtensionMarketService>()
+    .AddSingleton<IAccountService>(sp => sp.GetRequiredService<ExtensionMarketService>())
+    .AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddCors(options =>
@@ -160,7 +165,7 @@ return;
 
 static void HandlePendingModules()
 {
-    var pendingPath = Path.Combine(Directory.GetCurrentDirectory(), "PendingModule");
+    var pendingPath = Path.Combine(AppContext.BaseDirectory, "PendingModule");
     if (!Directory.Exists(pendingPath))
         return;
 
@@ -170,8 +175,8 @@ static void HandlePendingModules()
         {
             var moduleName = Path.GetFileName(moduleFolder);
             var wwwrootSource = Path.Combine(moduleFolder, "wwwroot");
-            var moduleTarget = Path.Combine(Directory.GetCurrentDirectory(), "Modules", moduleName);
-            var wwwrootTarget = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var moduleTarget = Path.Combine(AppContext.BaseDirectory, "Modules", moduleName);
+            var wwwrootTarget = Path.Combine(AppContext.BaseDirectory, "wwwroot");
 
             // 处理wwwroot中的静态资源
             if (Directory.Exists(wwwrootSource))
@@ -238,7 +243,7 @@ static void HandlePendingModules()
 
 static void HandleModulesToUninstall()
 {
-    var modulesPath = Path.Combine(Directory.GetCurrentDirectory(), "Modules");
+    var modulesPath = Path.Combine(AppContext.BaseDirectory, "Modules");
     if (!Directory.Exists(modulesPath))
         return;
 
@@ -251,7 +256,7 @@ static void HandleModulesToUninstall()
                 continue;
 
             var moduleName = Path.GetFileName(moduleFolder);
-            var moduleContentPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "_content", moduleName);
+            var moduleContentPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "_content", moduleName);
 
             // 删除模块的静态资源
             if (Directory.Exists(moduleContentPath))

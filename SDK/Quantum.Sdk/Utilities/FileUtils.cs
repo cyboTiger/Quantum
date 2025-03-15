@@ -8,7 +8,7 @@ public static class FileUtils
     /// <summary>
     /// 数据文件的根目录路径
     /// </summary>
-    public static readonly string DataFileFolder = Path.Combine(".", "data");
+    public static readonly string DataFileFolder = Path.Combine(AppContext.BaseDirectory, "data");
 
     /// <summary>
     /// 获取模块数据文件的完整路径
