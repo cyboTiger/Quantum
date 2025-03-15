@@ -66,12 +66,13 @@ public partial class ModuleManagement(ILogger<ModuleManagement> logger)
             {
                 // 保存上传的文件
                 await using var fileStream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 1024); // 1GB max
-                await using var fs = new FileStream(tempFile, FileMode.Create);
-                await fileStream.CopyToAsync(fs);
+                await using (var fs = new FileStream(tempFile, FileMode.Create))
+                {
+                    await fileStream.CopyToAsync(fs);
+                }
 
                 // 安装模块
-                var success = InstallModuleFromZipFile(tempFile);
-                if (success)
+                if (InstallModuleFromZipFile(tempFile))
                 {
                     _ = MessageService.Success("插件安装成功，请重启应用以加载新安装的插件");
                 }

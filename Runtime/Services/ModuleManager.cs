@@ -11,11 +11,13 @@ internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
     public required IServiceCollection HostServices { get; init; }
     public required IServiceProvider Activator { get; init; }
     public List<Assembly> LoadedAssemblies { get; } = [];
+    private readonly List<Assembly> _removedAssemblies = [];
 
     public async Task RegisterModulesAsync()
     {
         LoadModules();
         LoadedAssemblies.ForEach(RegisterModule);
+        _removedAssemblies.ForEach(asm => LoadedAssemblies.Remove(asm));
 
         // 调用所有模块的 OnAllLoaded 方法
         var initTasks = _loadedModules.Select(module =>
@@ -60,34 +62,43 @@ internal class ModuleManager(ILogger<ModuleManager> logger) : IModuleManager
 
     private void RegisterModule(Assembly assembly)
     {
-        var moduleTypes = assembly.GetTypes()
-            .Where(t => typeof(IModule).IsAssignableFrom(t) && t is { IsAbstract: false, IsInterface: false })
-            .ToList();
-
-        switch (moduleTypes.Count)
+        try
         {
-            case 0:
-                logger.LogWarning("No module implementation found in assembly {Assembly}", assembly.FullName);
-                return;
-            case > 1:
-                throw new InvalidOperationException(
-                    $"Multiple module implementations found in assembly {assembly.FullName}. Only one implementation of IModule is allowed per assembly.");
+            var moduleTypes = assembly.GetTypes()
+                .Where(t => typeof(IModule).IsAssignableFrom(t) && t is { IsAbstract: false, IsInterface: false })
+                .ToList();
+
+            switch (moduleTypes.Count)
+            {
+                case 0:
+                    logger.LogWarning("No module implementation found in assembly {Assembly}", assembly.FullName);
+                    return;
+                case > 1:
+                    throw new InvalidOperationException(
+                        $"Multiple module implementations found in assembly {assembly.FullName}. Only one implementation of IModule is allowed per assembly.");
+            }
+
+            var moduleType = moduleTypes[0];
+            // 创建模块实例并添加到已加载模块列表
+            var module = (IModule)ActivatorUtilities.CreateInstance(Activator, moduleType);
+            _loadedModules.Add(module);
+
+            // 注册为 IModule
+            HostServices.AddSingleton(module);
+
+            if (module is IUiModule uiModule)
+            {
+                HostServices.AddSingleton(uiModule);
+            }
+
+            logger.LogInformation("Registered module {ModuleId} of type {ModuleType}", module.ModuleId,
+                moduleType.FullName);
         }
-
-        var moduleType = moduleTypes[0];
-        // 创建模块实例并添加到已加载模块列表
-        var module = (IModule)ActivatorUtilities.CreateInstance(Activator, moduleType);
-        _loadedModules.Add(module);
-
-        // 注册为 IModule
-        HostServices.AddSingleton(module);
-
-        if (module is IUiModule uiModule)
+        catch (Exception ex)
         {
-            HostServices.AddSingleton(uiModule);
+            _removedAssemblies.Add(assembly);
+            logger.LogError(ex, "Error when load assembly");
         }
-
-        logger.LogInformation("Registered module {ModuleId} of type {ModuleType}", module.ModuleId, moduleType.FullName);
     }
 
     public Result<IModule> GetModule(string moduleId, Version? minVersion = null, Version? maxVersion = null)

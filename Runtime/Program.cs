@@ -4,12 +4,8 @@ using Quantum.Runtime.Services;
 using Quantum.Sdk;
 using Quantum.Sdk.Extensions;
 using Quantum.Sdk.Services;
-
-
-#if RELEASE
 using Serilog;
 using Serilog.Events;
-#endif
 
 // 处理待安装的模块
 HandlePendingModules();
@@ -29,16 +25,23 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.File(
         Path.Combine("logs", $"log_{DateTime.Now:yyyy-MM-dd.HH.mm.ss}.txt"),
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] [{SourceContext}] [{FilePath}:{LineNumber}] {Message:lj}{NewLine}{Exception}",
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
         rollingInterval: RollingInterval.Day,
         fileSizeLimitBytes: 10 * 1024 * 1024)
     .CreateLogger();
-
-builder.Host.UseSerilog();
+#else
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "[{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
 #endif
 
+builder.Host.UseSerilog();
+
 var preloadServices = new ServiceCollection();
-preloadServices.AddLogging()
+preloadServices.AddLogging(logBuilder => logBuilder.AddSerilog())
     .AddSingleton<InjectedCodeManager>()
     .AddSingleton(sp =>
     {
