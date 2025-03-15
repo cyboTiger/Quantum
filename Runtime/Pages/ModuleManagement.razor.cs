@@ -238,14 +238,8 @@ public partial class ModuleManagement(ILogger<ModuleManagement> logger)
         try
         {
             _isLoadingVersions = true;
-            var result = await ExtensionMarketService.GetAuthenticatedClientAsync();
-            if (!result.IsSuccess)
-            {
-                _ = MessageService.Error(result.Message);
-                return;
-            }
 
-            var client = result.Value!;
+            var client = RequestClient.Create();
             var response = await client.GetAsync($"{ApiBaseUrl}/Extensions/{extensionId}/versions");
             if (response.IsSuccessStatusCode)
             {
