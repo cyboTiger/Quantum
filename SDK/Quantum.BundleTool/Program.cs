@@ -172,6 +172,8 @@ try
                 // 如果不在排除列表中，添加到压缩包
                 if (!shouldExclude && !relativePath.EndsWith(".zip"))
                 {
+                    // 将所有目录分隔符统一替换为左斜杠'/'
+                    zipEntryPath = zipEntryPath.Replace(Path.DirectorySeparatorChar, '/');
                     archive.CreateEntryFromFile(file, zipEntryPath);
                     Console.WriteLine($"已添加: {zipEntryPath}");
                 }
