@@ -96,7 +96,53 @@ builder.Services.AddAntDesign()
     .AddSingleton<IQuantum>(quantum)
     .AddSingleton(injectedCodeManager);
 
-var app = builder.Build();
+WebApplication app;
+try
+{
+    app = builder.Build();
+}
+catch (Exception ex)
+{
+    #region ErrorResolver
+    // Log the exception
+    Log.Error(ex, "Application startup failed");
+
+    // Create a minimal application to show an error page
+    var errorBuilder = WebApplication.CreateBuilder(args);
+    errorBuilder.WebHost.UseElectron(args);
+
+    // Add minimal services required for Blazor error page
+    errorBuilder.Services.AddRazorComponents()
+        .AddInteractiveServerComponents();
+
+    // Add logging
+    errorBuilder.Services.AddLogging(logging => logging.AddSerilog());
+    errorBuilder.Services.AddAntDesign();
+
+    app = errorBuilder.Build();
+
+    // Configure minimal error pipeline
+    app.UseStaticFiles();
+    app.UseAntiforgery();
+
+    // Map Blazor components with ErrorApp as the root component
+    app.MapRazorComponents<Quantum.Runtime.ErrorApp>()
+        .AddInteractiveServerRenderMode();
+
+    // Pass the error message as a parameter to the root component
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path == "/")
+        {
+            context.Request.QueryString = context.Request.QueryString.Add("errorMessage", ex.Message);
+        }
+        await next();
+    });
+
+    // Skip the rest of the normal startup configuration
+    goto StartApp;
+    #endregion
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -122,6 +168,7 @@ app.MapRazorComponents<Quantum.Runtime.App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies([.. moduleManager.LoadedAssemblies]);
 
+StartApp:
 if (HybridSupport.IsElectronActive)
 {
     await app.StartAsync();
