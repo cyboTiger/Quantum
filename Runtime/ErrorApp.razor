@@ -6,6 +6,7 @@
 
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -91,11 +92,12 @@
         }
     </style>
 </head>
+
 <body>
     <div class="error-container">
         <h1>应用程序启动失败</h1>
         <p>很抱歉，应用程序在启动过程中遇到了问题。</p>
-        <p>请尝试重新启动应用程序，如果问题仍然存在，请联系技术支持。</p>
+        <p>请尝试重新启动应用程序，如果问题仍然存在，请联系技术支持。微信号: XmmShp</p>
 
         <div class="error-details">
             <p><strong>错误信息:</strong> @ErrorMessage</p>
@@ -108,6 +110,7 @@
 
     <script src="_framework/blazor.web.js"></script>
 </body>
+
 </html>
 
 @code {
@@ -134,7 +137,7 @@
     private async Task ConfirmDisablePlugins()
     {
         var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "确定要禁用所有插件吗？这可能会解决启动问题，但会使所有插件功能不可用。");
-        
+
         if (confirmed)
         {
             await DisableAllPlugins();
@@ -167,24 +170,24 @@
             {
                 var moduleName = Path.GetFileName(moduleDir);
                 var targetDir = Path.Combine(disabledDir, moduleName);
-                
+
                 // If the target directory already exists, delete it first
                 if (Directory.Exists(targetDir))
                 {
                     Directory.Delete(targetDir, true);
                 }
-                
+
                 // Move the module directory to the Disabled directory
                 Directory.Move(moduleDir, targetDir);
                 disabledCount++;
-                
+
                 Logger.LogInformation("Disabled module: {ModuleName}", moduleName);
             }
 
             StatusMessage = $"成功禁用了 {disabledCount} 个插件。应用程序将在3秒后重新加载...";
             ShowStatus = true;
             StateHasChanged();
-            
+
             // Reload after 3 seconds
             await Task.Delay(3000);
             await JsRuntime.InvokeVoidAsync("window.location.reload");
