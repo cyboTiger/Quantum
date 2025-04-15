@@ -68,8 +68,8 @@ var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
 #region MODULE_DEBUG
 #if DEBUG
 // 在这里手动加载模块，方便调试
-//moduleManager.LoadModule(typeof(TemplateModule.TemplateModule).Assembly);
-//moduleManager.LoadModule(typeof(TemplateUiModule.TemplateUiModule).Assembly);
+moduleManager.LoadModule(typeof(TemplateModule.TemplateModule).Assembly);
+moduleManager.LoadModule(typeof(TemplateUiModule.TemplateUiModule).Assembly);
 #endif
 #endregion
 
