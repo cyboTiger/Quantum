@@ -35,6 +35,7 @@ public class ZDBKRetriever : ISourceRetriever
         try
         {
             var response = await _httpClient.PostAsync(SourceUrl, content);
+            Console.WriteLine($"请求地址: {SourceUrl}");
             response.EnsureSuccessStatusCode();
             Console.WriteLine($"请求成功，状态码: {response.StatusCode}");
 
