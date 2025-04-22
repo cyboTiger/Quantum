@@ -8,7 +8,5 @@ public interface ISourceRetriever
     string SourceName { get; }
     string SourceUrl { get; }
 
-    public HttpClient _httpClient { get; set;}
-
-    Task<IEnumerable<(int id, string publishTime, string Url, string title)>> RetrieveSourcesAsync(int numPosts = 10, string keyWord = "");
+    Task<List<(string title, string url, string date, int number)>> RetrieveSourcesAsync(int numPosts = 10, string keyWord = "");
 }

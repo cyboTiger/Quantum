@@ -10,15 +10,15 @@ public class ZDBKRetriever : ISourceRetriever
     public string SourceId { get; } = "ZDBK";
     public string SourceName { get; } = "浙江大学教务管理网";
     public string SourceUrl { get; } = "http://zdbk.zju.edu.cn/jwglxt/xtgl/xwck_cxMoreLoginNews.html";
-    public HttpClient _httpClient { get; set; } = new HttpClient();
-
-    public ZDBKRetriever()
-    {
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    private readonly HttpClient _httpClient;
+    public ZDBKRetriever(IHttpClientFactory httpClientFactory) {
+        _httpClient = httpClientFactory.CreateClient();
     }
 
-    public async Task<IEnumerable<(int id, string publishTime, string Url, string title)>> RetrieveSourcesAsync(int numPosts = 10, string keyWord = "")
+    public async Task<List<(string title, string url, string date, int number)>> RetrieveSourcesAsync(int numPosts = 10, string keyWord = "")
     {
+        Console.WriteLine($"开始从 {SourceName} 检索数据...");
+        Console.WriteLine($"检索关键词: {keyWord}");
         var paramsDict = new Dictionary<string, string>
         {
             { "doType", "query" },
@@ -36,6 +36,7 @@ public class ZDBKRetriever : ISourceRetriever
         {
             var response = await _httpClient.PostAsync(SourceUrl, content);
             response.EnsureSuccessStatusCode();
+            Console.WriteLine($"请求成功，状态码: {response.StatusCode}");
 
             // 读取响应内容并解析为字符串
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -46,18 +47,18 @@ public class ZDBKRetriever : ISourceRetriever
             if (items == null || items.Count == 0)
             {
                 Console.WriteLine("未找到任何数据项。");
-                return Enumerable.Empty<(int id, string publishTime, string Url, string title)>();
+                return [];
             }
 
-            var result = new List<(int id, string publishTime, string Url, string title)>();
+            var result = new List<(string title, string url, string date, int number)>();
 
             for (int i = 0; i < items.Count; i++)
             {
                 result.Add((
-                    id: i + 1,
-                    publishTime: items[i]["fbsj"]?.ToString() ?? "unknown",
-                    Url: items[i]["xwbh"]?.ToString() ?? "unknown",
-                    title: items[i]["xwbt"]?.ToString() ?? "unknown"
+                    title: items[i]["xwbt"]?.ToString() ?? "unknown",
+                    url: items[i]["xwbh"]?.ToString() ?? "unknown",
+                    date: items[i]["fbsj"]?.ToString() ?? "unknown",
+                    number: i + 1
                 ));
             }
 

@@ -1,0 +1,80 @@
+@* Unimplemented *@
+@using AntDesign
+
+@* @inject HttpClient HttpClient *@
+
+<AntList Class="ResultList" DataSource="@Data" ItemLayout="ListItemLayout.Horizontal" Loading="@InitLoading">
+    <ChildContent Context="item">
+        <ListItem>
+            <ListItemMeta Description="@item.Description">
+                <TitleTemplate>
+                    <a href="@item.Url">@item.Title</a>
+                </TitleTemplate>
+            </ListItemMeta>
+            <div>@item.Date</div>
+        </ListItem>
+    </ChildContent>
+    <LoadMore>
+        @if (!InitLoading && !Loading)
+        {
+            <div class="loadmore-btn-content">
+                <Button OnClick="OnLoadMore">loading more</Button>
+            </div>
+        }
+    </LoadMore>
+</AntList>
+
+<style>
+
+    .demo-loadmore-list {
+        min-height: 350px;
+    }
+
+    .demo-loadmore-btn-content {
+        text-align: center;
+        margin-top: 12px;
+        height: 32px;
+        line-height: 32px;
+    }
+</style>
+
+@code {
+    public List<DataModel> Data;
+
+    public bool InitLoading { get; set; } = true;
+
+    public bool Loading { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Data = await GetData();
+        InitLoading = false;
+        await base.OnInitializedAsync();
+    }
+
+    public async Task OnLoadMore()
+    {
+        Loading = true;
+        var res = await GetData();
+        Data.AddRange(res);
+        Loading = false;
+    }
+
+    public async Task<List<DataModel>> GetData()
+    {
+        return await Task.FromResult(Result.Success());
+    }
+
+    public class Response
+    {
+        public List<DataModel> Results { get; set; }
+    }
+
+    public class DataModel
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Url { get; set; }
+        public string Date { get; set; }
+    }
+}

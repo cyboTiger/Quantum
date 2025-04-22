@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using AntDesign;
 
 namespace SearchModule;
 
@@ -10,12 +11,13 @@ public class CSPORetriever : ISourceRetriever
     public string SourceName { get; } = "浙江大学计算机学院网";
     public string SourceUrl { get; } = "http://cspo.zju.edu.cn/_web/_search/api/searchCon/create.rst?_p=YXM9NDg0JnQ9MTIxNCZkPTQ5ODUmcD0xJm09U04m";
 
-    public HttpClient _httpClient { get; set;} = new HttpClient();
+    public HttpClient _httpClient;
 
-    public CSPORetriever()
-    {
+
+    public CSPORetriever(IHttpClientFactory httpClientFactory)
+    { 
+        _httpClient = httpClientFactory.CreateClient();
         _httpClient.DefaultRequestHeaders.Add("Referer", SourceUrl);
-        _httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
     }
 
     public static string searchInfo_payload(string keyword, int pageIndex = 1)
@@ -39,11 +41,13 @@ public class CSPORetriever : ISourceRetriever
         return Convert.ToBase64String(bytes);
     }
     
-    public async Task<IEnumerable<(int id, string publishTime, string Url, string title)>> RetrieveSourcesAsync(int numPosts = 10, string keyWord = "")
+    public async Task<List<(string title, string url, string date, int number)>> RetrieveSourcesAsync(int numPosts = 10, string keyWord = "")
     {
+        Console.WriteLine($"开始从 {SourceName} 检索数据...");
+        Console.WriteLine($"检索关键词: {keyWord}");
         try
         {
-            var targetInfos = new List<(int id, string publishTime, string Url, string title)>();
+            var targetInfos = new List<(string title, string url, string date, int number)>();
             int numPages = (int)Math.Ceiling((double)numPosts / 10);
 
             for (int i = 0; i < numPages; i++)
@@ -64,15 +68,19 @@ public class CSPORetriever : ISourceRetriever
                 MatchCollection timeMatches = Regex.Matches(responseBody, timePattern);
 
                 int minLength = Math.Min(urlMatches.Count, Math.Min(captionMatches.Count, timeMatches.Count));
-                for (int j = 0; j < minLength; j++)
+                for (int j = 0; j < Math.Min(minLength, numPosts); j++)
                 {
                     // 假设无法直接获取到 id，这里暂时设置为 0 或者根据 URL 尝试解析
                     int id = j;
-                    targetInfos.Add((id, timeMatches[j].Groups[1].Value, urlMatches[j].Groups[1].Value, captionMatches[j].Groups[1].Value));
+                    targetInfos.Add((
+                        title: captionMatches[j].Groups[1].Value, 
+                        url: urlMatches[j].Groups[1].Value,
+                        date: timeMatches[j].Groups[1].Value, 
+                        number: id + 1
+                    ));
                 }
             }
-
-            return targetInfos.Take(numPosts); // 限制返回数量
+            return targetInfos;
         }
         catch (HttpRequestException e)
         {

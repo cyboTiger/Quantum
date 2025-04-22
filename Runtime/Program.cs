@@ -70,8 +70,13 @@ var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
 // 在这里手动加载模块，方便调试
 moduleManager.LoadModule(typeof(TemplateModule.TemplateModule).Assembly);
 moduleManager.LoadModule(typeof(TemplateUiModule.TemplateUiModule).Assembly);
+moduleManager.LoadModule(typeof(SearchModule.SearchModule).Assembly);
+moduleManager.LoadModule(typeof(SearchUiModule.SearchUiModule).Assembly);
 #endif
 #endregion
+
+// 首先在 Program.cs 或 Startup.cs 中注册 HttpClient
+builder.Services.AddHttpClient();
 
 await moduleManager.RegisterModulesAsync();
 

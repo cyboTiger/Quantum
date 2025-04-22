@@ -12,6 +12,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="../Samples/SearchModule/SearchModule.csproj" />
+	  <ProjectReference Include="../Samples/SearchUiModule/SearchUiModule.csproj" />
 	  <ProjectReference Include="../Samples/TemplateModule/TemplateModule.csproj" />
 	  <ProjectReference Include="../Samples/TemplateUiModule/TemplateUiModule.csproj" />
 	  <ProjectReference Include="..\SDK\Quantum.Sdk\Quantum.Sdk.csproj" />

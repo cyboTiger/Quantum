@@ -1,0 +1,102 @@
+@* Settings.razor *@
+@page "/wc-settings"
+
+<PageTitle>WheelchairSearch - Settings</PageTitle>
+
+<Affix OffsetTop="@_offsetTop">
+    <a href="/wc-search">
+        <Button Type="ButtonType.Primary"
+                Shape="ButtonShape.Round">
+            <Icon Type="@IconType.Outline.Rollback"/>
+            <span>Return to Search</span>
+        </Button>
+    </a>
+</Affix>
+
+<br><br>
+
+<Title level="2">WheelchairSearch - Settings</Title>
+
+<Divider />
+
+<Card Title="Source Management">
+    <Extra>
+        <Button Type="ButtonType.Default"
+                Shape="ButtonShape.Round"
+                OnClick="PingAll">
+            <Icon Type="@IconType.Outline.Wifi"/>
+            <span>Ping All</span>
+        </Button>
+    </Extra>
+    <Body>
+        <Flex Direction="FlexDirection.Vertical"
+            Gap="FlexGap.Middle">
+            @foreach(var i in Enumerable.Range(0, source_cnt))
+            {
+                pingResults.TryGetValue(i, out var pingValue);
+                <Flex Gap="FlexGap.Large"
+                    Align="FlexAlign.Center">
+                    <Button Type="@(sourceEnabled[i] ? ButtonType.Primary : ButtonType.Default)"
+                            Shape="ButtonShape.Round"
+                            OnClick="() => FlipSource(i)">
+                        <Icon Type="@IconType.Outline.Cloud"/>
+                        Source Name: @i
+                    </Button>
+                    <Icon Type="@IconType.Outline.Right"/>
+                    <Button Type="ButtonType.Default"
+                            Shape="ButtonShape.Round"
+                            Danger="@(!sourceEnabled[i])"
+                            disabled="@(!sourceEnabled[i])"
+                            OnClick="() => Ping(i)">
+                        <Icon Type="@IconType.Outline.Wifi"/>
+                        Delay = @pingValue ms
+                    </Button>
+                </Flex>
+            }
+        </Flex>
+    </Body>
+</Card>
+
+<br>
+
+
+
+@code {
+    private int _offsetTop = 10;
+
+    private Dictionary<int, int> pingResults = new();
+    private Dictionary<int, bool> sourceEnabled = new();
+    int source_cnt = 4;
+
+    private void Ping(int index)
+    {
+        if(sourceEnabled[index] == false) return;
+        int pingValue = new Random().Next(1, 100);
+        pingResults[index] = pingValue;
+
+        Console.WriteLine($"Source {index} pinged with {pingValue}ms");
+    }
+
+    private void PingAll()
+    {
+        foreach (var i in Enumerable.Range(0, source_cnt))
+        {
+            Ping(i);
+        }
+    }
+
+    private void FlipSource(int index)
+    {
+        sourceEnabled[index] = !sourceEnabled[index];
+        Console.WriteLine($"Source {index} enabled: {sourceEnabled[index]}");
+    }
+
+    protected override void OnInitialized()
+    {
+        for (int i = 0; i <= source_cnt; i++)
+        {
+            pingResults[i] = 0;
+            sourceEnabled[i] = true;
+        }
+    }
+}
