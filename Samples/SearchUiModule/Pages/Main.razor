@@ -157,7 +157,7 @@
         { "Relavant", "Recent" };
     private DateTime?[] selectedDates = new DateTime?[2];
 
-    private async void OnSearch()
+    private async Task OnSearch()
     {
         init = false;
         resultReady = false;
@@ -166,7 +166,7 @@
         try
         {
             // 调用 SearchService 的 getSearchResult 方法
-            data = searchService.getSearchResult(searchTxt).Result;
+            data = await searchService.getSearchResult(searchTxt);
             resultReady = true;
         }
         catch (Exception ex)

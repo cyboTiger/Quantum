@@ -29,7 +29,7 @@ public class SearchService : ISearchService
         {
             _sourceRetrieve[key] = true;
         }
-        setEnableSource(1, false);
+        setEnableSource(0, false);
     }
 
     public bool IsInitialized { get; private set; }

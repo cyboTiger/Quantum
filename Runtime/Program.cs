@@ -70,6 +70,8 @@ var moduleManager = preloadProvider.GetRequiredService<ModuleManager>();
 // 在这里手动加载模块，方便调试
 moduleManager.LoadModule(typeof(TemplateUiModule.TemplateUiModule).Assembly);
 moduleManager.LoadModule(typeof(SearchUiModule.SearchUiModule).Assembly);
+moduleManager.LoadModule(typeof(TemplateModule.TemplateModule).Assembly);
+moduleManager.LoadModule(typeof(SearchModule.SearchModule).Assembly);
 #endif
 #endregion
 
