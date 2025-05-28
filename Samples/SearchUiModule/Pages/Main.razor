@@ -1,6 +1,7 @@
 @* Main.razor *@
 @page "/wc-search"
 @using SearchModule
+@inject IJSRuntime JSRuntime
 
 <PageTitle>WheelchairSearch</PageTitle>
 
@@ -45,7 +46,6 @@
     <br><br>
 }
 
-    using SearchModule;
 @* <Segmented TValue="string" Labels=@(new[]{"Focus", "Standard"}) Value=@displayMode OnChange=@setDisplayMode /> *@
 
 <Search Size="InputSize.Large" EnterButton="true" Loading=@(!init && !resultReady) @bind-Value="searchTxt" OnSearch="OnSearch" AutoFocus=@true/>
@@ -56,7 +56,7 @@
     <Flex Wrap="FlexWrap.Wrap"
           Gap="FlexGap.Small"
           Direction="FlexDirection.Horizontal" >
-        <Button Type="@(enableAI ? ButtonType.Primary : ButtonType.Default)" 
+        <Button Type="@(searchService.enableAI ? ButtonType.Primary : ButtonType.Default)" 
                 Shape="ButtonShape.Round"
                 OnClick="SwitchAI" >
             <Icon Type="@IconType.Fill.Bulb"/>
@@ -69,13 +69,20 @@
             <Icon Type="@IconType.Outline.Bars"/>
             Most @(sorts[sortBy])
         </Button>
-        <Button Type="@(divideBySource ? ButtonType.Primary : ButtonType.Default)"
+        <Button Type="ButtonType.Primary"
+                Size="ButtonSize.Default"
+                Shape="ButtonShape.Round"
+                OnClick="SwitchDivide">
+            <Icon Type="@IconType.Outline.Cluster"/>
+            From @(divide[divideBy])
+        </Button>
+        @* <Button Type="@(ButtonType.Primary)"
             Size="ButtonSize.Default"
             Shape="ButtonShape.Round"
             OnClick="SwitchDivide">
             <Icon Type="@IconType.Outline.Cluster"/>
             <span>Divide by Source</span>
-        </Button>
+        </Button> *@
         <Button Type="@(enableTimeFilter ? ButtonType.Primary : ButtonType.Default)"
                 Size="ButtonSize.Default"
                 Shape="ButtonShape.Round"
@@ -118,7 +125,11 @@
             <ChildContent Context="item">
                 <ListItem>
                     <TitleTemplate>
-                        <a href="@item.url"> @item.title </a>
+                        <Button Type="ButtonType.Default"
+                                Size="ButtonSize.Default"
+                                Shape="ButtonShape.Round"
+                                OnClick="@(() => openUrl(item.url))"
+                        >@item.title</Button>
                     </TitleTemplate>
                     <div>@item.date</div> 
                 </ListItem>
@@ -140,24 +151,25 @@
 
     private string displayMode = "Standard";
 
-    private async void SwitchDisplayMode()
+    private async Task SwitchDisplayMode()
     {
         if(displayMode == "Focus") displayMode = "Standard";
         else if(displayMode == "Standard") displayMode = "Focus";
         await InvokeAsync(StateHasChanged);
     }
     private string searchTxt = string.Empty;
-    private bool enableAI = false;
-    private bool divideBySource = false;
     private bool enableTimeFilter = false;
     private bool init = true;
     private bool resultReady = false;
     private int sortBy = 0;
     private string[] sorts = new string[2]
         { "Relavant", "Recent" };
+    private int divideBy = 0;
+    private string[] divide = new string[]
+        { "All" };
     private DateTime?[] selectedDates = new DateTime?[2];
 
-    private async void OnSearch()
+    private async Task OnSearch()
     {
         init = false;
         resultReady = false;
@@ -166,7 +178,7 @@
         try
         {
             // 调用 SearchService 的 getSearchResult 方法
-            data = searchService.getSearchResult(searchTxt).Result;
+            data = await searchService.getSearchResult(searchTxt);
             resultReady = true;
         }
         catch (Exception ex)
@@ -178,15 +190,20 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task openUrl(string url)
+    {
+        await JSRuntime.InvokeVoidAsync("window.open", url, "_blank");
+    }
+
     private void SwitchAI()
     {
-        enableAI = !enableAI;
-        Console.WriteLine("Switch AI: " + enableAI);
+        searchService.enableAI = !searchService.enableAI;
+        Console.WriteLine("Switch AI: " + searchService.enableAI);
     }
     private void SwitchDivide()
     {
-        divideBySource = !divideBySource;
-        Console.WriteLine("Switch Divide: " + divideBySource);
+        divideBy = (divideBy + 1) % divide.Length;
+        Console.WriteLine("Switch Divide: " + divide[divideBy]);
     }
     private void SwitchTimeFilter()
     {
@@ -199,9 +216,9 @@
         Console.WriteLine("Switch Sort: " + sorts[sortBy]);
     }
 
-    public List<(string title, string url, string date, int number)> data = new()
+    public List<(string title, string url, string date, int number, string source)> data = new()
     {
-        ("Sample Title 1", "http://zdbk.zju.edu.cn", "2025-01-06", 1),
-        ("Sample Title 2", "https://www.zju.edu.cn", "2024-05-04", 2)
+        ("Sample Title 1", "http://zdbk.zju.edu.cn", "2025-01-06", 1, "ZDBK"),
+        ("Sample Title 2", "https://www.zju.edu.cn", "2024-05-04", 2, "CSPO")
     };
 }

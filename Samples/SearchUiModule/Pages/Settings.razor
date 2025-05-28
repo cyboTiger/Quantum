@@ -58,13 +58,22 @@
     </Body>
 </Card>
 
+<Card Title="AI Settings"> 
+    <Body>
+        <Title level="3">API Url</Title>
+        <Input Placeholder="API url" @bind-Value="@searchService.aiApiUrl" />
+        <br>
+        <Title level="3">API Key</Title>
+        <Input Placeholder="API key" @bind-Value="@searchService.aiApiKey" />
+    </Body>
+</Card>
+
 <br>
 
 
 
 @code {
     [Inject]
-
     public SearchService? searchService { get; set; }
     private int _offsetTop = 10;
 
