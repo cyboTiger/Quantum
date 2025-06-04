@@ -80,6 +80,7 @@ public class CSPORetriever : ISourceRetriever
                     ));
                 }
             }
+            targetInfos = targetInfos.OrderByDescending(x => x.date).ToList();
             return targetInfos;
         }
         catch (HttpRequestException e)

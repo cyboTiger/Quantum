@@ -96,7 +96,7 @@ public class ZDBKRetriever : ISourceRetriever
                     number: i + 1
                 ));
             }
-
+            result = result.OrderByDescending(x => x.date).ToList();
             return result;
         }
         catch (Exception ex)

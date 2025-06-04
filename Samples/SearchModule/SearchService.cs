@@ -37,6 +37,8 @@ public class SearchService : ISearchService
 
     public SearchService(ILogger<SearchService> logger, IHttpClientFactory httpClientFactory)
     {
+        aiApiKey = "sk-SgU0VKj1u3oKZHb7Ff239312305540F38cB23aC591C4A560";
+        aiApiUrl = "https://chat.zju.edu.cn/api/ai/v1/chat/completions";
         _logger = logger;
         _httpClientFactory = httpClientFactory;
         InitializeTask = InitializeAsync();
@@ -50,7 +52,7 @@ public class SearchService : ISearchService
         {
             _sourceRetrieve[key] = true;
         }
-        setEnableSource(0, false);
+        // setEnableSource(0, false);
     }
 
     public bool IsInitialized { get; private set; }
