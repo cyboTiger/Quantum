@@ -23,7 +23,7 @@ public class ZDBKRetriever : ISourceRetriever
         {
             { "xwbt", keyWord },
             { "_search", "false" },
-            { "queryModel.showCount", numPosts.ToString() },
+            { "queryModel.showCount", numPosts.ToString() },    // showcount 的限制为 1 - 15
             { "queryModel.currentPage", "1" },
             { "queryModel.sortName", "sfzd desc,fbsj" },
             { "queryModel.sortOrder", "desc" }

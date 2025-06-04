@@ -32,22 +32,22 @@
     <Body>
         <Flex Direction="FlexDirection.Vertical"
             Gap="FlexGap.Middle">
-            @foreach(var i in Enumerable.Range(0, source_cnt))
+            @foreach(var i in Enumerable.Range(0, searchService.sourceCnt()))
             {
                 pingResults.TryGetValue(i, out var pingValue);
                 <Flex Gap="FlexGap.Large"
                     Align="FlexAlign.Center">
-                    <Button Type="@(sourceEnabled[i] ? ButtonType.Primary : ButtonType.Default)"
+                    <Button Type="@(searchService.getEnableSource(i) ? ButtonType.Primary : ButtonType.Default)"
                             Shape="ButtonShape.Round"
                             OnClick="() => FlipSource(i)">
                         <Icon Type="@IconType.Outline.Cloud"/>
-                        Source Name: @i
+                        @searchService.sourceName(i)
                     </Button>
                     <Icon Type="@IconType.Outline.Right"/>
                     <Button Type="ButtonType.Default"
                             Shape="ButtonShape.Round"
-                            Danger="@(!sourceEnabled[i])"
-                            disabled="@(!sourceEnabled[i])"
+                            Danger="@(!searchService.getEnableSource(i))"
+                            disabled="@(!searchService.getEnableSource(i))"
                             OnClick="() => Ping(i)">
                         <Icon Type="@IconType.Outline.Wifi"/>
                         Delay = @pingValue ms
@@ -55,6 +55,16 @@
                 </Flex>
             }
         </Flex>
+    </Body>
+</Card>
+
+<Card Title="AI Settings"> 
+    <Body>
+        <Title level="3">API Url</Title>
+        <Input Placeholder="API url" @bind-Value="@searchService.aiApiUrl" />
+        <Divider/>
+        <Title level="3">API Key</Title>
+        <Input Placeholder="API key" @bind-Value="@searchService.aiApiKey" />
     </Body>
 </Card>
 
@@ -68,12 +78,10 @@
     private int _offsetTop = 10;
 
     private Dictionary<int, int> pingResults = new();
-    private Dictionary<int, bool> sourceEnabled = new();
-    int source_cnt = 4;
 
     private void Ping(int index)
     {
-        if(sourceEnabled[index] == false) return;
+        if(searchService.getEnableSource(index) == false) return;
         int pingValue = searchService.pingSource(index);
         if (pingValue == -1)
         {
@@ -87,7 +95,7 @@
 
     private void PingAll()
     {
-        foreach (var i in Enumerable.Range(0, source_cnt))
+        foreach (var i in Enumerable.Range(0, searchService.sourceCnt()))
         {
             Ping(i);
         }
@@ -95,16 +103,15 @@
 
     private void FlipSource(int index)
     {
-        sourceEnabled[index] = !sourceEnabled[index];
-        Console.WriteLine($"Source {index} enabled: {sourceEnabled[index]}");
+        searchService.setEnableSource(index, !searchService.getEnableSource(index));
+        Console.WriteLine($"Source {index} enabled: {searchService.getEnableSource(index)}");
     }
 
     protected override void OnInitialized()
     {
-        for (int i = 0; i <= source_cnt; i++)
+        for (int i = 0; i <= searchService.sourceCnt(); i++)
         {
             pingResults[i] = 0;
-            sourceEnabled[i] = true;
         }
     }
 }

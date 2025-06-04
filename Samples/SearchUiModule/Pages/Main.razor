@@ -56,7 +56,7 @@
     <Flex Wrap="FlexWrap.Wrap"
           Gap="FlexGap.Small"
           Direction="FlexDirection.Horizontal" >
-        <Button Type="@(enableAI ? ButtonType.Primary : ButtonType.Default)" 
+        <Button Type="@(searchService.enableAI ? ButtonType.Primary : ButtonType.Default)" 
                 Shape="ButtonShape.Round"
                 OnClick="SwitchAI" >
             <Icon Type="@IconType.Fill.Bulb"/>
@@ -158,7 +158,6 @@
         await InvokeAsync(StateHasChanged);
     }
     private string searchTxt = string.Empty;
-    private bool enableAI = false;
     private bool enableTimeFilter = false;
     private bool init = true;
     private bool resultReady = false;
@@ -180,6 +179,14 @@
         {
             // 调用 SearchService 的 getSearchResult 方法
             data = await searchService.getSearchResult(searchTxt);
+            if(sortBy == 0) // Relevant
+            {
+                data = data.OrderBy(x => x.number).ToList();
+            }
+            else if(sortBy == 1) // Recent
+            {
+                data = data.OrderByDescending(x => x.date).ToList();
+            }
             resultReady = true;
         }
         catch (Exception ex)
@@ -198,8 +205,8 @@
 
     private void SwitchAI()
     {
-        enableAI = !enableAI;
-        Console.WriteLine("Switch AI: " + enableAI);
+        searchService.enableAI = !searchService.enableAI;
+        Console.WriteLine("Switch AI: " + searchService.enableAI);
     }
     private void SwitchDivide()
     {
@@ -217,9 +224,9 @@
         Console.WriteLine("Switch Sort: " + sorts[sortBy]);
     }
 
-    public List<(string title, string url, string date, int number)> data = new()
+    public List<(string title, string url, string date, int number, string source)> data = new()
     {
-        ("Sample Title 1", "http://zdbk.zju.edu.cn", "2025-01-06", 1),
-        ("Sample Title 2", "https://www.zju.edu.cn", "2024-05-04", 2)
+        ("Sample Title 1", "http://zdbk.zju.edu.cn", "2025-01-06", 1, "ZDBK"),
+        ("Sample Title 2", "https://www.zju.edu.cn", "2024-05-04", 2, "CSPO")
     };
 }

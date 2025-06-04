@@ -19,8 +19,8 @@ public class SearchUiModule(ILogger<SearchUiModule> logger, IQuantum quantum) : 
         quantum.InjectedCodeManager.AddPreBlazor("<script>console.log('hello, world');</script>");
         logger.LogInformation("WheelchairSearch is Loaded");
         quantum.HostServices.AddScoped<SearchService>();
-        
-        return Task.FromResult(Result.Success());
+
+        return Task.FromResult<Result>(quantum.ModuleManager.GetModule("WheelchairSearchModule", new Version(1, 0)));
     }
 
     public string ModuleTitle => "WheelchairSearch"; // ModuleTitle是模块的标题，用于显示在上方导航栏上
